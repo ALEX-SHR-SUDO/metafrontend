@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { uploadImageToPinata, uploadMetadataToPinata } from '@/utils/pinata';
@@ -8,8 +8,13 @@ import { createTokenWithMetadata, TokenMetadata } from '@/utils/solana';
 import { getSolanaNetwork, getSolanaExplorerUrl } from '@/utils/helpers';
 
 export default function TokenCreator() {
+  const [mounted, setMounted] = useState(false);
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [formData, setFormData] = useState<TokenMetadata>({
     name: '',
@@ -157,7 +162,11 @@ export default function TokenCreator() {
 
           {/* Wallet Connection */}
           <div className="flex justify-center mb-8">
-            <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-700 hover:!to-blue-700" />
+            {mounted ? (
+              <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-700 hover:!to-blue-700" />
+            ) : (
+              <div className="h-12 w-40 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg animate-pulse"></div>
+            )}
           </div>
 
           {/* Main Form */}
@@ -277,10 +286,10 @@ export default function TokenCreator() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || !publicKey}
+                disabled={loading || !publicKey || !mounted}
                 className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
               >
-                {loading ? 'Creating Token...' : publicKey ? 'Create Token' : 'Connect Wallet First'}
+                {loading ? 'Creating Token...' : !mounted ? 'Loading...' : publicKey ? 'Create Token' : 'Connect Wallet First'}
               </button>
             </form>
 

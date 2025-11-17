@@ -15,14 +15,18 @@ export async function uploadImageToPinata(file: File): Promise<string> {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload image');
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Failed to upload image: ${response.status} ${errorText}`);
     }
 
     const data: PinataUploadResponse = await response.json();
     return data.uri;
   } catch (error) {
     console.error('Error uploading to Pinata:', error);
-    throw new Error('Failed to upload image to Pinata');
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
+    }
+    throw new Error(error instanceof Error ? error.message : 'Failed to upload image to Pinata');
   }
 }
 
@@ -37,13 +41,17 @@ export async function uploadMetadataToPinata(metadata: object): Promise<string> 
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload metadata');
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Failed to upload metadata: ${response.status} ${errorText}`);
     }
 
     const data: PinataUploadResponse = await response.json();
     return data.uri;
   } catch (error) {
     console.error('Error uploading metadata to Pinata:', error);
-    throw new Error('Failed to upload metadata to Pinata');
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
+    }
+    throw new Error(error instanceof Error ? error.message : 'Failed to upload metadata to Pinata');
   }
 }

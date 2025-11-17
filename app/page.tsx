@@ -1,4 +1,4 @@
-import TokenCreator from '@/components/TokenCreator';
+import ClientTokenCreator from '@/components/ClientTokenCreator';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <TokenCreator />;
+  return <ClientTokenCreator />;
 }
