@@ -221,19 +221,27 @@ export async function createTokenWithMetadata(
     // If this is a SendTransactionError, get detailed logs
     if (error instanceof SendTransactionError) {
       console.error('Transaction simulation failed. Getting detailed logs...');
-      try {
-        const logs = await error.getLogs(connection);
-        console.error('Transaction logs:', logs);
-        
-        // Create a more detailed error message with logs
-        const detailedError = new Error(
-          `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logs ? logs.join('\n') : 'No logs available'}`
-        );
-        throw detailedError;
-      } catch (logError) {
-        console.error('Failed to retrieve transaction logs:', logError);
-        throw error;
+      
+      // First check if logs are already available on the error object
+      let logs = error.logs;
+      
+      // If not, try to fetch them
+      if (!logs || logs.length === 0) {
+        try {
+          logs = await error.getLogs(connection);
+        } catch (logError) {
+          console.error('Failed to retrieve transaction logs:', logError);
+        }
       }
+      
+      console.error('Transaction logs:', logs);
+      
+      // Create a more detailed error message with logs
+      const logString = logs && logs.length > 0 ? logs.join('\n') : 'No logs available';
+      const detailedError = new Error(
+        `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logString}`
+      );
+      throw detailedError;
     }
     
     throw error;
@@ -366,19 +374,27 @@ export async function addMetadataToExistingToken(
     // If this is a SendTransactionError, get detailed logs
     if (error instanceof SendTransactionError) {
       console.error('Transaction simulation failed. Getting detailed logs...');
-      try {
-        const logs = await error.getLogs(connection);
-        console.error('Transaction logs:', logs);
-        
-        // Create a more detailed error message with logs
-        const detailedError = new Error(
-          `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logs ? logs.join('\n') : 'No logs available'}`
-        );
-        throw detailedError;
-      } catch (logError) {
-        console.error('Failed to retrieve transaction logs:', logError);
-        throw error;
+      
+      // First check if logs are already available on the error object
+      let logs = error.logs;
+      
+      // If not, try to fetch them
+      if (!logs || logs.length === 0) {
+        try {
+          logs = await error.getLogs(connection);
+        } catch (logError) {
+          console.error('Failed to retrieve transaction logs:', logError);
+        }
       }
+      
+      console.error('Transaction logs:', logs);
+      
+      // Create a more detailed error message with logs
+      const logString = logs && logs.length > 0 ? logs.join('\n') : 'No logs available';
+      const detailedError = new Error(
+        `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logString}`
+      );
+      throw detailedError;
     }
     
     throw error;
