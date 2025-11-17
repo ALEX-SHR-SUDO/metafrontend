@@ -107,6 +107,11 @@ Make sure you're on the correct network before adding metadata.
 - Double-check the mint address
 - Make sure you're on the correct network (devnet vs mainnet)
 
+### "Signature verification failed" or "Missing signature for public key"
+- **This issue has been fixed!** The application now correctly handles signature requirements for existing tokens.
+- If you still see this error, make sure you're using the latest version of the application.
+- The fix ensures that only the mint authority (your wallet) needs to sign, not the mint account itself.
+
 ### "Transaction simulation failed"
 - You might not be the mint authority
 - You might not have enough SOL for transaction fees
@@ -140,6 +145,45 @@ Your token should now display with the name, symbol, and logo!
 - **Utility Function**: `utils/solana.ts` - `addMetadataToExistingToken()`
 - **UI Component**: `components/AddMetadataToToken.tsx`
 - **Page Route**: `app/add-metadata/page.tsx`
+
+## Technical Details: Signature Fix (November 2025)
+
+### The Problem
+Previously, the `addMetadataToExistingToken` function incorrectly treated the mint account as a signer:
+
+```typescript
+// Old (incorrect) code
+const mintUmiSigner = createNoopSigner(mintUmiPublicKey);
+const createMetadataIx = createV1(umi, {
+  mint: mintUmiSigner,  // ❌ Treated mint as a signer
+  ...
+});
+```
+
+This caused the error: `Signature verification failed. Missing signature for public key`.
+
+### The Solution
+The fix recognizes that when adding metadata to an **existing** token:
+1. The mint account already exists and should be passed as a `PublicKey` (not a `Signer`)
+2. The mint authority (wallet) should be explicitly set as the `authority` parameter
+
+```typescript
+// New (correct) code
+const mintUmiPublicKey = fromWeb3JsPublicKey(mintPublicKey);
+const payerUmiSigner = createNoopSigner(payerUmiPublicKey);
+
+const createMetadataIx = createV1(umi, {
+  mint: mintUmiPublicKey,      // ✅ Mint as PublicKey (already exists)
+  authority: payerUmiSigner,    // ✅ Wallet as authority (will sign)
+  ...
+});
+```
+
+### Why This Matters
+- **Creating new tokens**: The mint must be a `Signer` because we're creating the mint account
+- **Adding metadata to existing tokens**: The mint should be a `PublicKey` because it already exists
+
+This distinction is crucial for proper transaction signing on Solana.
 
 ## Related Documentation
 
