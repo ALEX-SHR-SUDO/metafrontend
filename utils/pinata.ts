@@ -8,11 +8,18 @@ export async function uploadImageToPinata(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
+  // Create an AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
   try {
     const response = await fetch(`${BACKEND_URL}/api/upload-image`, {
       method: 'POST',
       body: formData,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
@@ -22,7 +29,12 @@ export async function uploadImageToPinata(file: File): Promise<string> {
     const data: PinataUploadResponse = await response.json();
     return data.uri;
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('Error uploading to Pinata:', error);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 30 seconds. Please check your connection and try again.`);
+    }
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
     }
@@ -31,6 +43,10 @@ export async function uploadImageToPinata(file: File): Promise<string> {
 }
 
 export async function uploadMetadataToPinata(metadata: object): Promise<string> {
+  // Create an AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
   try {
     const response = await fetch(`${BACKEND_URL}/api/upload-metadata`, {
       method: 'POST',
@@ -38,7 +54,10 @@ export async function uploadMetadataToPinata(metadata: object): Promise<string> 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(metadata),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
@@ -48,7 +67,12 @@ export async function uploadMetadataToPinata(metadata: object): Promise<string> 
     const data: PinataUploadResponse = await response.json();
     return data.uri;
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('Error uploading metadata to Pinata:', error);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 30 seconds. Please check your connection and try again.`);
+    }
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
     }
