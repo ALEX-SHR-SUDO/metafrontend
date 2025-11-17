@@ -30,7 +30,20 @@ The `createTokenWithMetadata` function now:
 // Import Metaplex libraries
 import { createV1, TokenStandard } from '@metaplex-foundation/mpl-token-metadata';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { fromWeb3JsKeypair, toWeb3JsInstruction } from '@metaplex-foundation/umi-web3js-adapters';
+import { fromWeb3JsKeypair, toWeb3JsInstruction, fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters';
+import { createNoopSigner } from '@metaplex-foundation/umi';
+
+// Convert wallet public key to UMI format and create noop signer
+const payerUmiPublicKey = fromWeb3JsPublicKey(payer);
+const payerUmiSigner = createNoopSigner(payerUmiPublicKey);
+
+// Configure UMI to use wallet as payer (not the mint keypair)
+umi.use({
+  install(umi) {
+    umi.identity = payerUmiSigner;
+    umi.payer = payerUmiSigner;
+  }
+});
 
 // Create on-chain metadata
 const createMetadataIx = createV1(umi, {
@@ -44,6 +57,12 @@ const createMetadataIx = createV1(umi, {
   // ... other metadata fields
 });
 ```
+
+### Important Fix (November 2025)
+
+**Issue:** The initial implementation used the mint keypair as the UMI payer, which caused a "Transfer: `from` must not carry data" error because the mint account doesn't exist yet when creating the metadata instruction.
+
+**Solution:** Changed the UMI payer to use the wallet's public key with `createNoopSigner`. This allows the instruction to be generated correctly, with actual signing handled by the wallet adapter later in the transaction flow.
 
 ## What This Means for Users
 

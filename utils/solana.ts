@@ -27,10 +27,12 @@ import {
   some,
   none,
   createSignerFromKeypair,
+  createNoopSigner,
 } from '@metaplex-foundation/umi';
 import { 
   toWeb3JsInstruction,
   fromWeb3JsKeypair,
+  fromWeb3JsPublicKey,
 } from '@metaplex-foundation/umi-web3js-adapters';
 import { calculateTokenAmount } from './helpers';
 
@@ -101,11 +103,17 @@ export async function createTokenWithMetadata(
     const mintUmiKeypair = fromWeb3JsKeypair(mintKeypair);
     const mintUmiSigner = createSignerFromKeypair(umi, mintUmiKeypair);
     
-    // Set the signer identity on the UMI instance to avoid NullSigner error
+    // Convert the wallet public key to UMI format and create a noop signer
+    // The actual signing will be done by the wallet later
+    const payerUmiPublicKey = fromWeb3JsPublicKey(payer);
+    const payerUmiSigner = createNoopSigner(payerUmiPublicKey);
+    
+    // Set the signer identity on the UMI instance
+    // Use the wallet as payer (not the mint keypair) to avoid "from must not carry data" error
     umi.use({
       install(umi) {
-        umi.identity = mintUmiSigner;
-        umi.payer = mintUmiSigner;
+        umi.identity = payerUmiSigner;
+        umi.payer = payerUmiSigner;
       }
     });
 
