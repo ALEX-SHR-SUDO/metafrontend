@@ -10,7 +10,7 @@ export async function uploadImageToPinata(file: File): Promise<string> {
 
   // Create an AbortController for timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/upload-image`, {
@@ -33,7 +33,7 @@ export async function uploadImageToPinata(file: File): Promise<string> {
     console.error('Error uploading to Pinata:', error);
     
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 30 seconds. Please check your connection and try again.`);
+      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 120 seconds. Please check your connection and try again.`);
     }
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
@@ -45,7 +45,7 @@ export async function uploadImageToPinata(file: File): Promise<string> {
 export async function uploadMetadataToPinata(metadata: object): Promise<string> {
   // Create an AbortController for timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/upload-metadata`, {
@@ -71,7 +71,7 @@ export async function uploadMetadataToPinata(metadata: object): Promise<string> 
     console.error('Error uploading metadata to Pinata:', error);
     
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 30 seconds. Please check your connection and try again.`);
+      throw new Error(`Upload timeout: Backend at ${BACKEND_URL} did not respond within 120 seconds. Please check your connection and try again.`);
     }
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
