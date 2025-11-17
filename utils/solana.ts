@@ -28,7 +28,6 @@ import {
   none,
   createSignerFromKeypair,
   createNoopSigner,
-  publicKey as umiPublicKey,
 } from '@metaplex-foundation/umi';
 import { 
   toWeb3JsInstruction,
