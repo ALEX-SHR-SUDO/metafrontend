@@ -14,6 +14,23 @@ import {
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
+import { 
+  createUmi 
+} from '@metaplex-foundation/umi-bundle-defaults';
+import {
+  createV1,
+  TokenStandard,
+} from '@metaplex-foundation/mpl-token-metadata';
+import {
+  percentAmount,
+  some,
+  none,
+  createSignerFromKeypair,
+} from '@metaplex-foundation/umi';
+import { 
+  toWeb3JsInstruction,
+  fromWeb3JsKeypair,
+} from '@metaplex-foundation/umi-web3js-adapters';
 import { calculateTokenAmount } from './helpers';
 
 export interface TokenMetadata {
@@ -37,6 +54,10 @@ export async function createTokenWithMetadata(
     const mintKeypair = Keypair.generate();
     const mintPublicKey = mintKeypair.publicKey;
 
+    console.log('Creating token with on-chain metadata using Metaplex...');
+    console.log('Mint address:', mintPublicKey.toString());
+    console.log('Metadata URI:', metadataUri);
+
     // Get minimum lamports for rent exemption
     const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
@@ -50,7 +71,7 @@ export async function createTokenWithMetadata(
       lastValidBlockHeight,
     });
 
-    // Add instruction to create mint account
+    // Step 1: Create mint account
     transaction.add(
       SystemProgram.createAccount({
         fromPubkey: payer,
@@ -61,7 +82,7 @@ export async function createTokenWithMetadata(
       })
     );
 
-    // Add instruction to initialize mint
+    // Step 2: Initialize mint
     transaction.add(
       createInitializeMintInstruction(
         mintPublicKey,
@@ -72,7 +93,39 @@ export async function createTokenWithMetadata(
       )
     );
 
-    // Get associated token account address
+    // Step 3: Create Metaplex metadata using UMI
+    const umi = createUmi(connection.rpcEndpoint);
+    
+    // Convert the mint keypair to UMI format
+    const mintUmiKeypair = fromWeb3JsKeypair(mintKeypair);
+    const mintUmiSigner = createSignerFromKeypair(umi, mintUmiKeypair);
+
+    // Build the createV1 instruction for metadata
+    const createMetadataIx = createV1(umi, {
+      mint: mintUmiSigner,
+      name: metadata.name,
+      symbol: metadata.symbol,
+      uri: metadataUri,
+      sellerFeeBasisPoints: percentAmount(0),
+      decimals: some(metadata.decimals),
+      tokenStandard: TokenStandard.Fungible,
+      collectionDetails: none(),
+      creators: none(),
+      printSupply: none(),
+      isMutable: true,
+      primarySaleHappened: false,
+    });
+
+    // Get the instruction from the builder and convert to web3.js
+    const metadataInstructions = createMetadataIx.getInstructions();
+    
+    // Convert each UMI instruction to web3.js instruction
+    for (const ix of metadataInstructions) {
+      const web3Ix = toWeb3JsInstruction(ix);
+      transaction.add(web3Ix);
+    }
+
+    // Step 4: Get associated token account address
     const associatedTokenAccount = await getAssociatedTokenAddress(
       mintPublicKey,
       payer,
@@ -80,7 +133,7 @@ export async function createTokenWithMetadata(
       TOKEN_PROGRAM_ID
     );
 
-    // Add instruction to create associated token account
+    // Step 5: Create associated token account
     transaction.add(
       createAssociatedTokenAccountInstruction(
         payer,
@@ -91,7 +144,7 @@ export async function createTokenWithMetadata(
       )
     );
 
-    // Add instruction to mint tokens
+    // Step 6: Mint tokens to the associated token account
     const mintAmount = calculateTokenAmount(metadata.supply, metadata.decimals);
     transaction.add(
       createMintToInstruction(
@@ -107,11 +160,21 @@ export async function createTokenWithMetadata(
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
 
+    console.log('Transaction prepared. Requesting wallet signature...');
+
     // Sign with wallet
     const signedTransaction = await signTransaction(transaction);
 
+    console.log('Sending transaction...');
+
     // Send transaction
-    const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+      skipPreflight: false,
+      preflightCommitment: 'confirmed',
+    });
+
+    console.log('Transaction sent. Signature:', signature);
+    console.log('Confirming transaction...');
 
     // Confirm transaction
     await connection.confirmTransaction({
@@ -120,14 +183,16 @@ export async function createTokenWithMetadata(
       lastValidBlockHeight,
     }, 'confirmed');
 
-    console.log('Token created successfully. Mint address:', mintPublicKey.toString());
-    console.log('Metadata URI (off-chain):', metadataUri);
-    console.log('Note: This creates an SPL token with off-chain metadata stored on IPFS.');
-    console.log('The metadata URI is provided as a reference but not stored on-chain via Metaplex.');
+    console.log('✅ Token created successfully!');
+    console.log('✅ Mint address:', mintPublicKey.toString());
+    console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
+    console.log('✅ Metadata URI:', metadataUri);
+    console.log('✅ Metadata should now be visible on Solscan.io');
+    console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
   } catch (error) {
-    console.error('Error creating token:', error);
+    console.error('Error creating token with Metaplex metadata:', error);
     throw error;
   }
 }
