@@ -99,6 +99,14 @@ export async function createTokenWithMetadata(
     // Convert the mint keypair to UMI format
     const mintUmiKeypair = fromWeb3JsKeypair(mintKeypair);
     const mintUmiSigner = createSignerFromKeypair(umi, mintUmiKeypair);
+    
+    // Set the signer identity on the UMI instance to avoid NullSigner error
+    umi.use({
+      install(umi) {
+        umi.identity = mintUmiSigner;
+        umi.payer = mintUmiSigner;
+      }
+    });
 
     // Build the createV1 instruction for metadata
     const createMetadataIx = createV1(umi, {
