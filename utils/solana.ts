@@ -45,6 +45,13 @@ export interface TokenMetadata {
   supply: number;
 }
 
+export interface ExistingTokenMetadata {
+  name: string;
+  symbol: string;
+  description: string;
+  image: string;
+}
+
 export async function createTokenWithMetadata(
   connection: Connection,
   payer: PublicKey,
@@ -210,6 +217,147 @@ export async function createTokenWithMetadata(
     return mintPublicKey.toString();
   } catch (error) {
     console.error('Error creating token with Metaplex metadata:', error);
+    
+    // If this is a SendTransactionError, get detailed logs
+    if (error instanceof SendTransactionError) {
+      console.error('Transaction simulation failed. Getting detailed logs...');
+      try {
+        const logs = await error.getLogs(connection);
+        console.error('Transaction logs:', logs);
+        
+        // Create a more detailed error message with logs
+        const detailedError = new Error(
+          `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logs ? logs.join('\n') : 'No logs available'}`
+        );
+        throw detailedError;
+      } catch (logError) {
+        console.error('Failed to retrieve transaction logs:', logError);
+        throw error;
+      }
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Add metadata to an existing token that was created without it
+ * This function creates on-chain metadata for tokens that don't have it yet
+ */
+export async function addMetadataToExistingToken(
+  connection: Connection,
+  payer: PublicKey,
+  mintAddress: string,
+  metadata: ExistingTokenMetadata,
+  metadataUri: string,
+  signTransaction: (transaction: Transaction) => Promise<Transaction>
+): Promise<string> {
+  try {
+    const mintPublicKey = new PublicKey(mintAddress);
+    
+    console.log('Adding on-chain metadata to existing token using Metaplex...');
+    console.log('Mint address:', mintPublicKey.toString());
+    console.log('Metadata URI:', metadataUri);
+
+    // Get mint account info to determine decimals
+    const mintInfo = await connection.getParsedAccountInfo(mintPublicKey);
+    
+    if (!mintInfo.value || !('parsed' in mintInfo.value.data)) {
+      throw new Error('Invalid mint account or mint does not exist');
+    }
+
+    const mintData = mintInfo.value.data.parsed.info;
+    const decimals = mintData.decimals;
+
+    console.log('Token decimals:', decimals);
+
+    // Get recent blockhash
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
+
+    // Create transaction
+    const transaction = new Transaction({
+      feePayer: payer,
+      blockhash,
+      lastValidBlockHeight,
+    });
+
+    // Create Metaplex metadata using UMI
+    const umi = createUmi(connection.rpcEndpoint);
+    
+    // Convert the mint public key to UMI format (no keypair needed since mint already exists)
+    const mintUmiPublicKey = fromWeb3JsPublicKey(mintPublicKey);
+    const mintUmiSigner = createNoopSigner(mintUmiPublicKey);
+    
+    // Convert the wallet public key to UMI format and create a noop signer
+    const payerUmiPublicKey = fromWeb3JsPublicKey(payer);
+    const payerUmiSigner = createNoopSigner(payerUmiPublicKey);
+    
+    // Set the signer identity on the UMI instance
+    umi.use({
+      install(umi) {
+        umi.identity = payerUmiSigner;
+        umi.payer = payerUmiSigner;
+      }
+    });
+
+    // Build the createV1 instruction for metadata
+    const createMetadataIx = createV1(umi, {
+      mint: mintUmiSigner,
+      name: metadata.name,
+      symbol: metadata.symbol,
+      uri: metadataUri,
+      sellerFeeBasisPoints: percentAmount(0),
+      decimals: some(decimals),
+      tokenStandard: TokenStandard.Fungible,
+      collectionDetails: none(),
+      creators: none(),
+      printSupply: none(),
+      isMutable: true,
+      primarySaleHappened: false,
+    });
+
+    // Get the instruction from the builder and convert to web3.js
+    const metadataInstructions = createMetadataIx.getInstructions();
+    
+    // Convert each UMI instruction to web3.js instruction
+    for (const ix of metadataInstructions) {
+      const web3Ix = toWeb3JsInstruction(ix);
+      transaction.add(web3Ix);
+    }
+
+    console.log('Transaction prepared. Requesting wallet signature...');
+
+    // Sign with wallet
+    const signedTransaction = await signTransaction(transaction);
+
+    console.log('Sending transaction...');
+
+    // Send transaction
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+      skipPreflight: false,
+      preflightCommitment: 'confirmed',
+    });
+
+    console.log('Transaction sent. Signature:', signature);
+    console.log('Confirming transaction...');
+
+    // Confirm transaction
+    await connection.confirmTransaction({
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    }, 'confirmed');
+
+    console.log('✅ Metadata added successfully!');
+    console.log('✅ Mint address:', mintPublicKey.toString());
+    console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
+    console.log('✅ Metadata URI:', metadataUri);
+    console.log('✅ Metadata should now be visible on Solscan.io');
+    console.log('Transaction signature:', signature);
+
+    return signature;
+  } catch (error) {
+    console.error('Error adding metadata to existing token:', error);
     
     // If this is a SendTransactionError, get detailed logs
     if (error instanceof SendTransactionError) {

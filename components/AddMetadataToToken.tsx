@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { uploadImageToPinata, uploadMetadataToPinata } from '@/utils/pinata';
-import { createTokenWithMetadata, TokenMetadata } from '@/utils/solana';
+import { addMetadataToExistingToken, ExistingTokenMetadata } from '@/utils/solana';
 import { getSolanaNetwork, getSolanaExplorerUrl } from '@/utils/helpers';
 
-export default function TokenCreator() {
+export default function AddMetadataToToken() {
   const [mounted, setMounted] = useState(false);
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
@@ -16,27 +16,26 @@ export default function TokenCreator() {
     setMounted(true);
   }, []);
 
-  const [formData, setFormData] = useState<TokenMetadata>({
+  const [formData, setFormData] = useState<ExistingTokenMetadata>({
     name: '',
     symbol: '',
     description: '',
     image: '',
-    decimals: 9,
-    supply: 1000000,
   });
 
+  const [mintAddress, setMintAddress] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
-  const [mintAddress, setMintAddress] = useState('');
+  const [transactionSignature, setTransactionSignature] = useState('');
   const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'decimals' || name === 'supply' ? Number(value) : value,
+      [name]: value,
     }));
   };
 
@@ -56,7 +55,7 @@ export default function TokenCreator() {
     e.preventDefault();
     setError('');
     setStatus('');
-    setMintAddress('');
+    setTransactionSignature('');
 
     if (!publicKey) {
       setError('Please connect your wallet first');
@@ -65,6 +64,11 @@ export default function TokenCreator() {
 
     if (!signTransaction) {
       setError('Wallet does not support signing transactions');
+      return;
+    }
+
+    if (!mintAddress) {
+      setError('Please enter a token mint address');
       return;
     }
 
@@ -110,24 +114,25 @@ export default function TokenCreator() {
       const metadataUri = await uploadMetadataToPinata(metadata);
       console.log('Metadata uploaded:', metadataUri);
 
-      // Step 3: Create token with metadata
-      setStatus('Creating token on Solana...');
-      const tokenFormData: TokenMetadata = {
+      // Step 3: Add metadata to existing token
+      setStatus('Adding metadata to token on Solana...');
+      const tokenFormData: ExistingTokenMetadata = {
         ...formData,
         image: imageUri,
       };
 
-      const mint = await createTokenWithMetadata(
+      const signature = await addMetadataToExistingToken(
         connection,
         publicKey,
+        mintAddress,
         tokenFormData,
         metadataUri,
         signTransaction
       );
 
-      setMintAddress(mint);
-      setStatus('Token created successfully!');
-      console.log('Token created:', mint);
+      setTransactionSignature(signature);
+      setStatus('Metadata added successfully!');
+      console.log('Metadata added. Transaction:', signature);
 
       // Reset form
       setFormData({
@@ -135,14 +140,13 @@ export default function TokenCreator() {
         symbol: '',
         description: '',
         image: '',
-        decimals: 9,
-        supply: 1000000,
       });
+      setMintAddress('');
       setLogoFile(null);
       setLogoPreview('');
     } catch (err) {
-      console.error('Error creating token:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create token');
+      console.error('Error adding metadata:', err);
+      setError(err instanceof Error ? err.message : 'Failed to add metadata');
     } finally {
       setLoading(false);
     }
@@ -154,24 +158,24 @@ export default function TokenCreator() {
         <div className="max-w-2xl mx-auto">
           {/* Navigation */}
           <div className="flex justify-center gap-4 mb-6">
-            <span className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold">
-              Create New Token
-            </span>
             <a
-              href="/add-metadata"
+              href="/"
               className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
             >
-              Add Metadata to Existing Token
+              Create New Token
             </a>
+            <span className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold">
+              Add Metadata to Existing Token
+            </span>
           </div>
 
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">
-              SPL Token Creator
+              Add Metadata to Existing Token
             </h1>
             <p className="text-gray-300">
-              Create your Solana token with metadata on-chain
+              Add on-chain metadata to tokens that don&apos;t have it yet
             </p>
           </div>
 
@@ -187,6 +191,26 @@ export default function TokenCreator() {
           {/* Main Form */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Mint Address */}
+              <div>
+                <label htmlFor="mintAddress" className="block text-sm font-medium text-white mb-2">
+                  Token Mint Address *
+                </label>
+                <input
+                  type="text"
+                  id="mintAddress"
+                  name="mintAddress"
+                  value={mintAddress}
+                  onChange={(e) => setMintAddress(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                  placeholder="BdXtKHC6NAfnmopy7qip76qTXYGKPkqNZb19QRAyu77o"
+                  required
+                />
+                <p className="mt-2 text-xs text-gray-400">
+                  The address of the token that needs metadata
+                </p>
+              </div>
+
               {/* Token Name */}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
@@ -265,46 +289,13 @@ export default function TokenCreator() {
                 </div>
               </div>
 
-              {/* Decimals */}
-              <div>
-                <label htmlFor="decimals" className="block text-sm font-medium text-white mb-2">
-                  Decimals
-                </label>
-                <input
-                  type="number"
-                  id="decimals"
-                  name="decimals"
-                  value={formData.decimals}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="9"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Supply */}
-              <div>
-                <label htmlFor="supply" className="block text-sm font-medium text-white mb-2">
-                  Initial Supply
-                </label>
-                <input
-                  type="number"
-                  id="supply"
-                  name="supply"
-                  value={formData.supply}
-                  onChange={handleInputChange}
-                  min="1"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading || !publicKey || !mounted}
                 className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
               >
-                {loading ? 'Creating Token...' : !mounted ? 'Loading...' : publicKey ? 'Create Token' : 'Connect Wallet First'}
+                {loading ? 'Adding Metadata...' : !mounted ? 'Loading...' : publicKey ? 'Add Metadata' : 'Connect Wallet First'}
               </button>
             </form>
 
@@ -321,18 +312,29 @@ export default function TokenCreator() {
               </div>
             )}
 
-            {mintAddress && (
+            {transactionSignature && (
               <div className="mt-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg">
-                <p className="text-green-200 font-semibold mb-2">Token Mint Address:</p>
-                <p className="text-white font-mono text-sm break-all">{mintAddress}</p>
+                <p className="text-green-200 font-semibold mb-2">Transaction Signature:</p>
+                <p className="text-white font-mono text-sm break-all mb-2">{transactionSignature}</p>
                 <a
-                  href={getSolanaExplorerUrl(mintAddress)}
+                  href={getSolanaExplorerUrl(transactionSignature)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block mt-2 text-blue-300 hover:text-blue-200 underline"
+                  className="inline-block text-blue-300 hover:text-blue-200 underline"
                 >
-                  View on Solana Explorer →
+                  View Transaction on Explorer →
                 </a>
+                <div className="mt-4 pt-4 border-t border-green-500/30">
+                  <p className="text-green-200 font-semibold mb-2">Check your token:</p>
+                  <a
+                    href={`https://solscan.io/token/${mintAddress}?cluster=${getSolanaNetwork()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-blue-300 hover:text-blue-200 underline"
+                  >
+                    View Token on Solscan →
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -341,6 +343,9 @@ export default function TokenCreator() {
           <div className="mt-8 text-center text-gray-400 text-sm">
             <p>Make sure you have some SOL in your wallet to pay for transaction fees.</p>
             <p className="mt-2">Network: {getSolanaNetwork()}</p>
+            <p className="mt-2 text-yellow-300">
+              ⚠️ Note: You must be the mint authority to add metadata to a token.
+            </p>
           </div>
         </div>
       </div>
