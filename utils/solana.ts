@@ -284,11 +284,13 @@ export async function addMetadataToExistingToken(
     // Create Metaplex metadata using UMI
     const umi = createUmi(connection.rpcEndpoint);
     
-    // Convert the mint public key to UMI format (no keypair needed since mint already exists)
+    // Convert the mint public key to UMI format
+    // For existing tokens, we pass the mint as a PublicKey (not a Signer)
+    // because the mint account already exists and doesn't need to sign
     const mintUmiPublicKey = fromWeb3JsPublicKey(mintPublicKey);
-    const mintUmiSigner = createNoopSigner(mintUmiPublicKey);
     
     // Convert the wallet public key to UMI format and create a noop signer
+    // The payer is the mint authority and will sign the transaction
     const payerUmiPublicKey = fromWeb3JsPublicKey(payer);
     const payerUmiSigner = createNoopSigner(payerUmiPublicKey);
     
@@ -301,8 +303,10 @@ export async function addMetadataToExistingToken(
     });
 
     // Build the createV1 instruction for metadata
+    // Key fix: Pass mint as PublicKey (not Signer) and set authority explicitly
     const createMetadataIx = createV1(umi, {
-      mint: mintUmiSigner,
+      mint: mintUmiPublicKey,  // PublicKey, not Signer - the mint already exists
+      authority: payerUmiSigner,  // Explicitly set the mint authority as signer
       name: metadata.name,
       symbol: metadata.symbol,
       uri: metadataUri,
