@@ -4,6 +4,7 @@ import {
   PublicKey,
   Transaction,
   SystemProgram,
+  SendTransactionError,
 } from '@solana/web3.js';
 import {
   createInitializeMintInstruction,
@@ -201,6 +202,25 @@ export async function createTokenWithMetadata(
     return mintPublicKey.toString();
   } catch (error) {
     console.error('Error creating token with Metaplex metadata:', error);
+    
+    // If this is a SendTransactionError, get detailed logs
+    if (error instanceof SendTransactionError) {
+      console.error('Transaction simulation failed. Getting detailed logs...');
+      try {
+        const logs = await error.getLogs(connection);
+        console.error('Transaction logs:', logs);
+        
+        // Create a more detailed error message with logs
+        const detailedError = new Error(
+          `Transaction simulation failed.\n\nError: ${error.message}\n\nTransaction Logs:\n${logs ? logs.join('\n') : 'No logs available'}`
+        );
+        throw detailedError;
+      } catch (logError) {
+        console.error('Failed to retrieve transaction logs:', logError);
+        throw error;
+      }
+    }
+    
     throw error;
   }
 }
