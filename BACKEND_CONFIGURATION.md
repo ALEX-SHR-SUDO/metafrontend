@@ -52,18 +52,34 @@ NEXT_PUBLIC_BACKEND_URL=http://0.0.0.0:10000
    - **Environment**: Production (or All)
 5. Save and redeploy your frontend
 
+> **Note**: The frontend automatically upgrades HTTP URLs to HTTPS when running on HTTPS to prevent mixed content errors. However, it's recommended to set the correct HTTPS URL in production.
+
 ### 2. Code Reference
 
 The backend URL is used in the code at:
 
 **File**: `utils/pinata.ts`
 
-**Line 5**:
+**Function**: `getBackendURL()`
 ```typescript
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://0.0.0.0:10000';
+function getBackendURL(): string {
+  const envBackendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://0.0.0.0:10000';
+  
+  // If running in browser and frontend is HTTPS, ensure backend URL is also HTTPS
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    if (envBackendURL.startsWith('http://')) {
+      return envBackendURL.replace('http://', 'https://');
+    }
+  }
+  
+  return envBackendURL;
+}
 ```
 
-This line reads the environment variable and falls back to `http://0.0.0.0:10000` if not set.
+This function:
+- Reads the environment variable and falls back to `http://0.0.0.0:10000` if not set
+- **Automatically upgrades HTTP to HTTPS** when the frontend is served over HTTPS (prevents mixed content errors)
+- Preserves HTTP in local development environments
 
 ## API Endpoints Used
 
