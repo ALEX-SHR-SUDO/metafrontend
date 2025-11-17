@@ -93,6 +93,8 @@ export default function TokenCreator() {
         symbol: formData.symbol,
         description: formData.description,
         image: imageUri,
+        external_url: '',
+        seller_fee_basis_points: 0,
         attributes: [],
         properties: {
           files: [
