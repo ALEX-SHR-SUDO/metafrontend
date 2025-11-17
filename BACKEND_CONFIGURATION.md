@@ -20,7 +20,7 @@ The frontend needs to know where the backend API is running to:
 **File**: `.env.local` (create this file in the metafrontend directory)
 
 ```env
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+NEXT_PUBLIC_BACKEND_URL=http://0.0.0.0:10000
 ```
 
 **Steps**:
@@ -60,10 +60,10 @@ The backend URL is used in the code at:
 
 **Line 5**:
 ```typescript
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://0.0.0.0:10000';
 ```
 
-This line reads the environment variable and falls back to `http://localhost:3001` if not set.
+This line reads the environment variable and falls back to `http://0.0.0.0:10000` if not set.
 
 ## API Endpoints Used
 
@@ -84,11 +84,11 @@ The frontend makes requests to these backend endpoints:
    cd metabackend
    npm run dev
    ```
-   Backend should be running on http://localhost:3001
+   Backend should be running on http://0.0.0.0:10000
 
 2. **Test Backend Health**:
    ```bash
-   curl http://localhost:3001/health
+   curl http://0.0.0.0:10000/health
    ```
    Should return: `{"status":"ok"}`
 
@@ -103,7 +103,7 @@ The frontend makes requests to these backend endpoints:
    - Open http://localhost:3000
    - Open DevTools (F12) → Network tab
    - Try uploading a token logo
-   - Check that requests are made to `http://localhost:3001/api/upload-image`
+   - Check that requests are made to `http://0.0.0.0:10000/api/upload-image`
 
 ### Test Production
 
@@ -123,7 +123,7 @@ The frontend makes requests to these backend endpoints:
 
 ### Development
 ```env
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+NEXT_PUBLIC_BACKEND_URL=http://0.0.0.0:10000
 ```
 
 ### Staging/Testing
@@ -148,7 +148,7 @@ NEXT_PUBLIC_BACKEND_URL=https://metabackend.onrender.com
 **Solutions**:
 1. Verify backend is running:
    ```bash
-   curl http://localhost:3001/health
+   curl http://0.0.0.0:10000/health
    ```
 2. Check the backend URL in `.env.local`:
    ```bash
@@ -195,7 +195,7 @@ NEXT_PUBLIC_BACKEND_URL=https://metabackend.onrender.com
 
 | Environment | File/Location | Example Value |
 |-------------|---------------|---------------|
-| **Local** | `.env.local` | `http://localhost:3001` |
+| **Local** | `.env.local` | `http://0.0.0.0:10000` |
 | **Production** | Vercel Dashboard | `https://metabackend.onrender.com` |
 | **Code** | `utils/pinata.ts` line 5 | Read from env variable |
 
