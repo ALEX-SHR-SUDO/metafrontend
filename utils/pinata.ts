@@ -2,7 +2,7 @@ export interface PinataUploadResponse {
   uri: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://0.0.0.0:10000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://metabackend-c4e4.onrender.com';
 
 export async function uploadImageToPinata(file: File): Promise<string> {
   const formData = new FormData();
