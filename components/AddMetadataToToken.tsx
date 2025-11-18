@@ -8,6 +8,7 @@ import { addMetadataToExistingToken, ExistingTokenMetadata } from '@/utils/solan
 import { getSolanaNetwork, getSolanaExplorerUrl } from '@/utils/helpers';
 import { useNetwork } from '@/contexts/NetworkContext';
 import NetworkSwitcher from './NetworkSwitcher';
+import { RpcWarning } from './RpcWarning';
 
 export default function AddMetadataToToken() {
   const [mounted, setMounted] = useState(false);
@@ -193,6 +194,9 @@ export default function AddMetadataToToken() {
             </div>
             {mounted && <NetworkSwitcher />}
           </div>
+
+          {/* RPC Configuration Warning */}
+          {mounted && <RpcWarning />}
 
           {/* Main Form */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
