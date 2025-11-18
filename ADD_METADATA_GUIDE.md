@@ -153,9 +153,32 @@ To add metadata to the token mentioned in the issue:
 4. Enter token name, symbol, and upload a logo
 5. Click "Add Metadata"
 6. Sign the transaction
-7. Visit: https://solscan.io/token/BdXtKHC6NAfnmopy7qip76qTXYGKPkqNZb19QRAyu77o?cluster=devnet
+7. **IMPORTANT**: After the transaction confirms, check the browser console for:
+   - ✅ Metadata account address (save this!)
+   - ✅ Metadata URI (IPFS link)
+   - ✅ Transaction signature
+8. **Wait 30-60 seconds** for Solscan to index the new metadata
+9. Visit: https://solscan.io/token/BdXtKHC6NAfnmopy7qip76qTXYGKPkqNZb19QRAyu77o?cluster=devnet
+10. Refresh the page if the metadata doesn't appear immediately
 
 Your token should now display with the name, symbol, and logo!
+
+### If Metadata Still Doesn't Appear
+
+1. **Verify the metadata account exists**:
+   - Go to Solana Explorer: `https://explorer.solana.com/address/[METADATA_ADDRESS]?cluster=devnet`
+   - Replace `[METADATA_ADDRESS]` with the address from console logs
+   - You should see the metadata account
+
+2. **Check the IPFS metadata**:
+   - Copy the metadata URI from console logs
+   - Open it in your browser (e.g., `https://gateway.pinata.cloud/ipfs/...`)
+   - Verify the JSON contains name, symbol, and image fields
+
+3. **Contact Solscan**:
+   - If the metadata account exists and IPFS JSON is correct, but Solscan still doesn't show it
+   - The issue may be with Solscan's indexer
+   - Try viewing the token on other explorers like Solana Explorer or Solscan's competitor
 
 ## Code Reference
 
