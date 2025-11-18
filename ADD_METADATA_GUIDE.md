@@ -122,9 +122,26 @@ Make sure you're on the correct network before adding metadata.
 - Check your internet connection
 
 ### Metadata doesn't show on Solscan
-- Wait a few seconds and refresh the page
-- Solscan might take time to index new metadata
-- Check the transaction on Solana Explorer to verify it succeeded
+- **Wait and refresh**: Solscan can take 30-60 seconds to index new metadata. Wait a bit and refresh the page.
+- **Verify transaction**: Check the transaction on Solana Explorer to confirm it succeeded
+- **Check the metadata account**: Look for the "Metadata (Token Metadata)" section on the Solscan token page
+- **Verify the network**: Make sure you're viewing the correct network (devnet vs mainnet) on Solscan
+- **Clear cache**: Try clearing your browser cache or opening in an incognito/private window
+- **Check console logs**: The application logs the metadata account address - you can verify it exists on-chain
+
+### How to Verify Metadata Was Created Successfully
+
+After the transaction confirms, you should see console logs showing:
+- ✅ Mint address
+- ✅ Metadata account address (PDA)
+- ✅ Metadata URI (IPFS link)
+- ✅ Update authority
+- ✅ Transaction signature
+
+You can manually verify the metadata account exists by:
+1. Copying the metadata account address from the console logs
+2. Visiting: `https://explorer.solana.com/address/[METADATA_ADDRESS]?cluster=devnet`
+3. You should see the metadata account with your token's information
 
 ## Example: Fixing Token BdXtKHC6NAfnmopy7qip76qTXYGKPkqNZb19QRAyu77o
 
@@ -184,6 +201,22 @@ const createMetadataIx = createV1(umi, {
 - **Adding metadata to existing tokens**: The mint should be a `PublicKey` because it already exists
 
 This distinction is crucial for proper transaction signing on Solana.
+
+## Recent Improvements (November 2025)
+
+### Latest Fix: Explicit Update Authority
+**Date**: November 18, 2025
+
+The metadata creation process now explicitly sets the `updateAuthority` and `payer` parameters when creating metadata. This ensures:
+- Proper metadata account configuration
+- Better compatibility with Solscan and other explorers
+- Clear ownership and update rights
+
+**What changed:**
+- Added explicit `updateAuthority` parameter to `createV1` calls
+- Added explicit `payer` parameter to ensure proper account funding
+- Enhanced logging to show metadata PDA address and update authority
+- Helps verify metadata was created correctly
 
 ## Technical Details: Automatic Create/Update Detection (November 2025)
 

@@ -132,6 +132,7 @@ export async function createTokenWithMetadata(
       mint: mintUmiSigner,
       authority: payerUmiSigner,  // Set the mint authority
       updateAuthority: payerUmiPublicKey,  // Explicitly set the update authority
+      payer: payerUmiSigner,  // Explicitly set the payer
       name: metadata.name,
       symbol: metadata.symbol,
       uri: metadataUri,
@@ -353,6 +354,7 @@ export async function addMetadataToExistingToken(
         mint: mintUmiPublicKey,  // PublicKey, not Signer - the mint already exists
         authority: payerUmiSigner,  // Explicitly set the mint authority as signer
         updateAuthority: payerUmiPublicKey,  // Explicitly set the update authority
+        payer: payerUmiSigner,  // Explicitly set the payer
         name: metadata.name,
         symbol: metadata.symbol,
         uri: metadataUri,
