@@ -20,7 +20,10 @@ import {
 } from '@metaplex-foundation/umi-bundle-defaults';
 import {
   createV1,
+  updateV1,
   TokenStandard,
+  findMetadataPda,
+  safeFetchMetadataFromSeeds,
 } from '@metaplex-foundation/mpl-token-metadata';
 import {
   percentAmount,
@@ -310,26 +313,56 @@ export async function addMetadataToExistingToken(
       }
     });
 
-    // Build the createV1 instruction for metadata
-    // Key fix: Pass mint as PublicKey (not Signer) and set authority explicitly
-    const createMetadataIx = createV1(umi, {
-      mint: mintUmiPublicKey,  // PublicKey, not Signer - the mint already exists
-      authority: payerUmiSigner,  // Explicitly set the mint authority as signer
-      name: metadata.name,
-      symbol: metadata.symbol,
-      uri: metadataUri,
-      sellerFeeBasisPoints: percentAmount(0),
-      decimals: some(decimals),
-      tokenStandard: TokenStandard.Fungible,
-      collectionDetails: none(),
-      creators: none(),
-      printSupply: none(),
-      isMutable: true,
-      primarySaleHappened: false,
-    });
-
-    // Get the instruction from the builder and convert to web3.js
-    const metadataInstructions = createMetadataIx.getInstructions();
+    // Check if metadata already exists for this token
+    const metadataPda = findMetadataPda(umi, { mint: mintUmiPublicKey });
+    const existingMetadata = await safeFetchMetadataFromSeeds(umi, { mint: mintUmiPublicKey });
+    
+    let metadataInstructions;
+    
+    if (existingMetadata) {
+      // Metadata already exists, use updateV1 instead of createV1
+      console.log('Metadata already exists for this token. Updating existing metadata...');
+      console.log('Existing metadata address:', metadataPda[0].toString());
+      
+      const updateMetadataIx = updateV1(umi, {
+        mint: mintUmiPublicKey,
+        authority: payerUmiSigner,
+        data: some({
+          name: metadata.name,
+          symbol: metadata.symbol,
+          uri: metadataUri,
+          sellerFeeBasisPoints: 0,
+          creators: none(),
+          collection: none(),
+          uses: none(),
+        }),
+        primarySaleHappened: some(false),
+        isMutable: some(true),
+      });
+      
+      metadataInstructions = updateMetadataIx.getInstructions();
+    } else {
+      // Metadata doesn't exist, create it
+      console.log('No existing metadata found. Creating new metadata...');
+      
+      const createMetadataIx = createV1(umi, {
+        mint: mintUmiPublicKey,  // PublicKey, not Signer - the mint already exists
+        authority: payerUmiSigner,  // Explicitly set the mint authority as signer
+        name: metadata.name,
+        symbol: metadata.symbol,
+        uri: metadataUri,
+        sellerFeeBasisPoints: percentAmount(0),
+        decimals: some(decimals),
+        tokenStandard: TokenStandard.Fungible,
+        collectionDetails: none(),
+        creators: none(),
+        printSupply: none(),
+        isMutable: true,
+        primarySaleHappened: false,
+      });
+      
+      metadataInstructions = createMetadataIx.getInstructions();
+    }
     
     // Convert each UMI instruction to web3.js instruction
     for (const ix of metadataInstructions) {
@@ -360,9 +393,10 @@ export async function addMetadataToExistingToken(
       lastValidBlockHeight,
     }, 'confirmed');
 
-    console.log('✅ Metadata added successfully!');
+    const action = existingMetadata ? 'updated' : 'added';
+    console.log(`✅ Metadata ${action} successfully!`);
     console.log('✅ Mint address:', mintPublicKey.toString());
-    console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
+    console.log(`✅ On-chain metadata ${action} via Metaplex Token Metadata Program`);
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ Metadata should now be visible on Solscan.io');
     console.log('Transaction signature:', signature);
