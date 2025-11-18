@@ -1,0 +1,105 @@
+name: Dev to Main Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_pr:
+        description: 'Create pull request instead of direct merge'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  
+  # Optionally trigger on push to dev branch
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-dev-to-main:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Check if dev branch exists
+        id: check_dev
+        run: |
+          if git ls-remote --heads origin dev | grep dev; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create dev branch if it doesn't exist
+        if: steps.check_dev.outputs.exists == 'false'
+        run: |
+          echo "Dev branch does not exist. Creating it from main..."
+          git checkout -b dev
+          git push origin dev
+          echo "Dev branch created successfully"
+      
+      - name: Fetch latest changes
+        run: |
+          git fetch origin dev
+          git fetch origin main
+      
+      - name: Check for differences
+        id: check_diff
+        run: |
+          git checkout dev
+          if git diff --quiet origin/main origin/dev; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to sync between dev and main"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected between dev and main"
+          fi
+      
+      - name: Create Pull Request
+        if: steps.check_diff.outputs.has_changes == 'true' && (github.event.inputs.create_pr == 'true' || github.event_name == 'push')
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev
+          base: main
+          title: 'Sync: Dev → Main'
+          body: |
+            ## Automated sync from dev to main
+            
+            This PR contains changes from the `dev` branch that are ready to be merged into `main`.
+            
+            **Triggered by:** ${{ github.event_name }}
+            **Triggered by user:** ${{ github.actor }}
+            
+            Please review the changes before merging.
+          labels: sync, automated
+      
+      - name: Direct merge to main
+        if: steps.check_diff.outputs.has_changes == 'true' && github.event.inputs.create_pr == 'false' && github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Performing direct merge from dev to main..."
+          git checkout main
+          git merge --no-ff origin/dev -m "Merge dev into main"
+          git push origin main
+          echo "Successfully merged dev into main"
+      
+      - name: No changes to sync
+        if: steps.check_diff.outputs.has_changes == 'false'
+        run: |
+          echo "✓ Dev and main branches are in sync. No action needed."

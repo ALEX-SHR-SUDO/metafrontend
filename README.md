@@ -170,6 +170,27 @@ The backend might be sleeping (Render free tier). Wait 30-60 seconds and try aga
 - Verify the transaction succeeded on Solana Explorer
 - Check you're viewing the correct network (devnet/mainnet)
 
+## Development Workflow
+
+### Dev to Main Sync
+
+This repository includes a GitHub Actions workflow for managing changes between `dev` and `main` branches:
+
+**Manual Trigger:**
+1. Go to Actions tab → "Dev to Main Sync"
+2. Click "Run workflow"
+3. Choose whether to create a PR or direct merge
+4. Click "Run workflow" button
+
+**Automatic Trigger:**
+- Automatically creates a PR when changes are pushed to `dev` branch
+
+**Features:**
+- Creates `dev` branch automatically if it doesn't exist
+- Checks for differences between branches
+- Option to create PR or direct merge to main
+- Skips workflow if branches are in sync
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
