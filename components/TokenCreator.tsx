@@ -31,6 +31,8 @@ export default function TokenCreator() {
   const [status, setStatus] = useState('');
   const [mintAddress, setMintAddress] = useState('');
   const [error, setError] = useState('');
+  const [revokeMintAuthority, setRevokeMintAuthority] = useState(false);
+  const [revokeFreezeAuthority, setRevokeFreezeAuthority] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -122,7 +124,9 @@ export default function TokenCreator() {
         publicKey,
         tokenFormData,
         metadataUri,
-        signTransaction
+        signTransaction,
+        revokeMintAuthority,
+        revokeFreezeAuthority
       );
 
       setMintAddress(mint);
@@ -296,6 +300,68 @@ export default function TokenCreator() {
                   min="1"
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
+              </div>
+
+              {/* Revoke Authorities Section */}
+              <div className="space-y-4 pt-4 border-t border-white/20">
+                <div className="text-sm font-medium text-white mb-3">
+                  Token Authorities
+                  <p className="text-xs text-gray-400 mt-1">Revoking authorities makes your token more decentralized</p>
+                </div>
+
+                {/* Revoke Freeze Authority Toggle */}
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex-1">
+                    <label htmlFor="revokeFreezeAuthority" className="text-white font-medium cursor-pointer">
+                      Revoke Freeze Authority
+                    </label>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Prevents freezing of token accounts
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={revokeFreezeAuthority}
+                    onClick={() => setRevokeFreezeAuthority(!revokeFreezeAuthority)}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                      revokeFreezeAuthority ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                        revokeFreezeAuthority ? 'translate-x-8' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Revoke Mint Authority Toggle */}
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex-1">
+                    <label htmlFor="revokeMintAuthority" className="text-white font-medium cursor-pointer">
+                      Revoke Mint Authority
+                    </label>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Makes token supply fixed and immutable
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={revokeMintAuthority}
+                    onClick={() => setRevokeMintAuthority(!revokeMintAuthority)}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                      revokeMintAuthority ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                        revokeMintAuthority ? 'translate-x-8' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Submit Button */}
