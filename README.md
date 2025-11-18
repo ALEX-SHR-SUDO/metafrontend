@@ -163,6 +163,7 @@ The backend might be sleeping (Render free tier). Wait 30-60 seconds and try aga
 - Check you have enough SOL for fees
 - Verify you're on the correct network
 - For adding metadata: ensure you're the mint authority
+- The app automatically handles both creating new metadata and updating existing metadata
 
 ### Token doesn't show on Solscan
 - Wait a few seconds and refresh

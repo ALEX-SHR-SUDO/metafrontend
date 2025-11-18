@@ -89,7 +89,7 @@ This ensures a deterministic, unique metadata account for each token.
 
 - You must be the mint authority of the token
 - You need SOL for transaction fees
-- The token must not already have metadata (if it does, you'd need to update it instead)
+- The application automatically detects if metadata exists and updates it, or creates new metadata if none exists
 - The token must be on the same network as configured (devnet/mainnet)
 
 ## Network Configuration
@@ -115,7 +115,7 @@ Make sure you're on the correct network before adding metadata.
 ### "Transaction simulation failed"
 - You might not be the mint authority
 - You might not have enough SOL for transaction fees
-- The token might already have metadata
+- Check the console logs for detailed error messages
 
 ### "Cannot connect to backend"
 - The backend might be sleeping (Render free tier takes ~30 seconds to wake up)
@@ -184,6 +184,49 @@ const createMetadataIx = createV1(umi, {
 - **Adding metadata to existing tokens**: The mint should be a `PublicKey` because it already exists
 
 This distinction is crucial for proper transaction signing on Solana.
+
+## Technical Details: Automatic Create/Update Detection (November 2025)
+
+### Enhanced Functionality
+The `addMetadataToExistingToken` function now automatically detects whether metadata already exists and handles both scenarios:
+
+#### Metadata Existence Check
+```typescript
+// Check if metadata already exists
+const existingMetadata = await safeFetchMetadataFromSeeds(umi, { mint: mintUmiPublicKey });
+
+if (existingMetadata) {
+  // Use updateV1 to update existing metadata
+  const updateMetadataIx = updateV1(umi, {
+    mint: mintUmiPublicKey,
+    authority: payerUmiSigner,
+    data: some({
+      name: metadata.name,
+      symbol: metadata.symbol,
+      uri: metadataUri,
+      // ... other fields
+    }),
+  });
+} else {
+  // Use createV1 to create new metadata
+  const createMetadataIx = createV1(umi, {
+    mint: mintUmiPublicKey,
+    authority: payerUmiSigner,
+    name: metadata.name,
+    symbol: metadata.symbol,
+    uri: metadataUri,
+    // ... other fields
+  });
+}
+```
+
+### Why This Matters
+- **Tokens without metadata**: The function creates new metadata using `createV1`
+- **Tokens with existing metadata**: The function updates the metadata using `updateV1`
+- **Error prevention**: Eliminates the "Expected account to be uninitialized" error (0xc7)
+- **User experience**: Users don't need to know if their token has metadata or not
+
+This enhancement makes the feature more robust and user-friendly, automatically handling both scenarios without requiring user intervention.
 
 ## Related Documentation
 
