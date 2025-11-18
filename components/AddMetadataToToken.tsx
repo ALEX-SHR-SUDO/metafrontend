@@ -6,11 +6,14 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { uploadImageToPinata, uploadMetadataToPinata } from '@/utils/pinata';
 import { addMetadataToExistingToken, ExistingTokenMetadata } from '@/utils/solana';
 import { getSolanaNetwork, getSolanaExplorerUrl } from '@/utils/helpers';
+import { useNetwork } from '@/contexts/NetworkContext';
+import NetworkSwitcher from './NetworkSwitcher';
 
 export default function AddMetadataToToken() {
   const [mounted, setMounted] = useState(false);
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
+  const { network } = useNetwork();
 
   useEffect(() => {
     setMounted(true);
@@ -179,13 +182,16 @@ export default function AddMetadataToToken() {
             </p>
           </div>
 
-          {/* Wallet Connection */}
-          <div className="flex justify-center mb-8">
-            {mounted ? (
-              <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-700 hover:!to-blue-700" />
-            ) : (
-              <div className="h-12 w-40 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg animate-pulse"></div>
-            )}
+          {/* Wallet Connection and Network Switcher */}
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <div className="flex justify-center">
+              {mounted ? (
+                <WalletMultiButton className="!bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-700 hover:!to-blue-700" />
+              ) : (
+                <div className="h-12 w-40 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg animate-pulse"></div>
+              )}
+            </div>
+            {mounted && <NetworkSwitcher />}
           </div>
 
           {/* Main Form */}
@@ -342,7 +348,9 @@ export default function AddMetadataToToken() {
           {/* Info Section */}
           <div className="mt-8 text-center text-gray-400 text-sm">
             <p>Make sure you have some SOL in your wallet to pay for transaction fees.</p>
-            <p className="mt-2">Network: {getSolanaNetwork()}</p>
+            <p className="mt-2">
+              Network: <span className={network === 'mainnet-beta' ? 'text-green-400 font-semibold' : 'text-purple-400 font-semibold'}>{network}</span>
+            </p>
             <p className="mt-2 text-yellow-300">
               ⚠️ Note: You must be the mint authority to add metadata to a token.
             </p>

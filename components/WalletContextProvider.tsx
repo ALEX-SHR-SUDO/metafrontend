@@ -7,6 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import { clusterApiUrl } from '@solana/web3.js';
+import { useNetwork } from '@/contexts/NetworkContext';
 
 // Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -18,15 +19,16 @@ interface WalletContextProviderProps {
 export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children }) => {
   // Track if component is mounted to avoid hydration issues
   const [mounted, setMounted] = useState(false);
+  const { network } = useNetwork();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Get network from environment or default to devnet
-  const network = (process.env.NEXT_PUBLIC_SOLANA_NETWORK as WalletAdapterNetwork) || WalletAdapterNetwork.Devnet;
+  // Convert our network type to WalletAdapterNetwork
+  const walletNetwork = network === 'mainnet-beta' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet;
   
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => clusterApiUrl(walletNetwork), [walletNetwork]);
 
   const wallets = useMemo(
     () => [

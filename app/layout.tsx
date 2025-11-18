@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { NetworkProvider } from '@/contexts/NetworkContext';
 import { WalletContextProvider } from '@/components/WalletContextProvider';
 
 export const metadata: Metadata = {
@@ -18,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <WalletContextProvider>
-          {children}
-        </WalletContextProvider>
+        <NetworkProvider>
+          <WalletContextProvider>
+            {children}
+          </WalletContextProvider>
+        </NetworkProvider>
       </body>
     </html>
   );
