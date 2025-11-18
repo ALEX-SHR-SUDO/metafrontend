@@ -54,9 +54,16 @@ Edit `.env.local`:
 # Solana Network (devnet, testnet, or mainnet-beta)
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
+# Custom RPC Endpoints (Recommended for production to avoid 403 errors)
+# Get free API keys from Helius, QuickNode, or Alchemy
+NEXT_PUBLIC_SOLANA_RPC_MAINNET=https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY
+NEXT_PUBLIC_SOLANA_RPC_DEVNET=https://devnet.helius-rpc.com/?api-key=YOUR_API_KEY
+
 # Backend API URL for IPFS uploads
 NEXT_PUBLIC_BACKEND_URL=https://metabackend-c4e4.onrender.com
 ```
+
+**Important**: For production use, configure custom RPC endpoints to avoid rate limiting. See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for details.
 
 ### Development
 
@@ -140,6 +147,7 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 
 ## Documentation
 
+- [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) - **Fix 403 errors** with custom RPC setup
 - [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) - Guide for adding metadata to existing tokens
 - [METADATA_FIX.md](./METADATA_FIX.md) - Technical details about metadata implementation
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deployment instructions
@@ -155,6 +163,12 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 Configure via `NEXT_PUBLIC_SOLANA_NETWORK` environment variable.
 
 ## Troubleshooting
+
+### "403 Error" or "Access Forbidden"
+The public Solana RPC endpoints are rate-limited. Solution:
+- **Get a free RPC endpoint** from [Helius](https://helius.dev), [QuickNode](https://quicknode.com), or [Alchemy](https://alchemy.com)
+- Configure `NEXT_PUBLIC_SOLANA_RPC_MAINNET` and `NEXT_PUBLIC_SOLANA_RPC_DEVNET` in `.env.local`
+- See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for detailed setup instructions
 
 ### "Cannot connect to backend"
 The backend might be sleeping (Render free tier). Wait 30-60 seconds and try again.
