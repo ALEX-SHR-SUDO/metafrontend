@@ -130,6 +130,9 @@ export async function createTokenWithMetadata(
     // Build the createV1 instruction for metadata
     const createMetadataIx = createV1(umi, {
       mint: mintUmiSigner,
+      authority: payerUmiSigner,  // Set the mint authority
+      updateAuthority: payerUmiPublicKey,  // Explicitly set the update authority
+      payer: payerUmiSigner,  // Explicitly set the payer
       name: metadata.name,
       symbol: metadata.symbol,
       uri: metadataUri,
@@ -315,6 +318,8 @@ export async function addMetadataToExistingToken(
 
     // Check if metadata already exists for this token
     const metadataPda = findMetadataPda(umi, { mint: mintUmiPublicKey });
+    console.log('Metadata PDA address:', metadataPda[0].toString());
+    
     const existingMetadata = await safeFetchMetadataFromSeeds(umi, { mint: mintUmiPublicKey });
     
     let metadataInstructions;
@@ -348,6 +353,8 @@ export async function addMetadataToExistingToken(
       const createMetadataIx = createV1(umi, {
         mint: mintUmiPublicKey,  // PublicKey, not Signer - the mint already exists
         authority: payerUmiSigner,  // Explicitly set the mint authority as signer
+        updateAuthority: payerUmiPublicKey,  // Explicitly set the update authority
+        payer: payerUmiSigner,  // Explicitly set the payer
         name: metadata.name,
         symbol: metadata.symbol,
         uri: metadataUri,
@@ -396,9 +403,11 @@ export async function addMetadataToExistingToken(
     const action = existingMetadata ? 'updated' : 'added';
     console.log(`✅ Metadata ${action} successfully!`);
     console.log('✅ Mint address:', mintPublicKey.toString());
+    console.log('✅ Metadata account address:', metadataPda[0].toString());
     console.log(`✅ On-chain metadata ${action} via Metaplex Token Metadata Program`);
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ Metadata should now be visible on Solscan.io');
+    console.log('✅ Update authority:', payerUmiPublicKey.toString());
     console.log('Transaction signature:', signature);
 
     return signature;
