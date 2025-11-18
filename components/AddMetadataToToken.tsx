@@ -308,7 +308,7 @@ export default function AddMetadataToToken() {
 
             {error && (
               <div className="mt-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
-                <p className="text-red-200">{error}</p>
+                <p className="text-red-200 whitespace-pre-wrap">{error}</p>
               </div>
             )}
 
