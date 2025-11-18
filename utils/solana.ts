@@ -14,6 +14,8 @@ import {
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
+  createSetAuthorityInstruction,
+  AuthorityType,
 } from '@solana/spl-token';
 import { 
   createUmi 
@@ -60,7 +62,9 @@ export async function createTokenWithMetadata(
   payer: PublicKey,
   metadata: TokenMetadata,
   metadataUri: string,
-  signTransaction: (transaction: Transaction) => Promise<Transaction>
+  signTransaction: (transaction: Transaction) => Promise<Transaction>,
+  revokeMintAuthority: boolean = false,
+  revokeFreezeAuthority: boolean = false
 ): Promise<string> {
   try {
     // Create a new mint keypair
@@ -101,7 +105,7 @@ export async function createTokenWithMetadata(
         mintPublicKey,
         metadata.decimals,
         payer,
-        payer,
+        revokeFreezeAuthority ? null : payer,
         TOKEN_PROGRAM_ID
       )
     );
@@ -187,6 +191,20 @@ export async function createTokenWithMetadata(
       )
     );
 
+    // Step 7: Revoke mint authority if requested
+    if (revokeMintAuthority) {
+      transaction.add(
+        createSetAuthorityInstruction(
+          mintPublicKey,
+          payer,
+          AuthorityType.MintTokens,
+          null,
+          [],
+          TOKEN_PROGRAM_ID
+        )
+      );
+    }
+
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
 
@@ -218,6 +236,12 @@ export async function createTokenWithMetadata(
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ Metadata should now be visible on Solscan.io');
+    if (revokeMintAuthority) {
+      console.log('✅ Mint authority revoked - token supply is now fixed');
+    }
+    if (revokeFreezeAuthority) {
+      console.log('✅ Freeze authority revoked - token accounts cannot be frozen');
+    }
     console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
