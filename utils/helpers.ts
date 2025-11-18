@@ -1,9 +1,14 @@
+import { SolanaNetwork } from '@/contexts/NetworkContext';
+
 /**
- * Gets the Solana network from environment or defaults to devnet
+ * Gets the Solana network from localStorage or defaults to devnet
  */
-export function getSolanaNetwork(): string {
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SOLANA_NETWORK) {
-    return process.env.NEXT_PUBLIC_SOLANA_NETWORK;
+export function getSolanaNetwork(): SolanaNetwork {
+  if (typeof window !== 'undefined') {
+    const savedNetwork = localStorage.getItem('solana-network') as SolanaNetwork | null;
+    if (savedNetwork && (savedNetwork === 'devnet' || savedNetwork === 'mainnet-beta')) {
+      return savedNetwork;
+    }
   }
   return 'devnet';
 }
