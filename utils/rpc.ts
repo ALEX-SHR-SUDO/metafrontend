@@ -1,7 +1,8 @@
 /**
  * Common placeholder patterns that indicate an RPC endpoint is not properly configured
+ * Exported for testing and potential extension
  */
-const RPC_PLACEHOLDER_PATTERNS = [
+export const RPC_PLACEHOLDER_PATTERNS = [
   'YOUR_API_KEY',
   'YOUR_KEY',
   'REPLACE_ME',
@@ -19,9 +20,10 @@ export const isValidRpcEndpoint = (endpoint: string | undefined): endpoint is st
     return false;
   }
   
-  // Check if endpoint contains placeholder text
+  // Check if endpoint contains placeholder text (case-insensitive)
+  const endpointUpper = endpoint.toUpperCase();
   const hasPlaceholder = RPC_PLACEHOLDER_PATTERNS.some(placeholder => 
-    endpoint.toUpperCase().includes(placeholder)
+    endpointUpper.includes(placeholder)
   );
   
   return !hasPlaceholder;
