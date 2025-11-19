@@ -36,16 +36,25 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
         console.log('Using custom mainnet RPC endpoint');
         return customEndpoint;
       }
+      // For mainnet without a custom endpoint, strongly recommend setting one
+      console.warn('⚠️ No custom RPC endpoint configured for mainnet!');
+      console.warn('⚠️ Public endpoints have strict rate limits and may return 403 errors.');
+      console.warn('⚠️ Please set NEXT_PUBLIC_SOLANA_RPC_MAINNET in your .env.local file.');
+      console.warn('⚠️ Get a free RPC endpoint from: https://helius.dev or https://quicknode.com');
+      console.log('Using public mainnet RPC endpoint (expect rate limiting)');
+      return clusterApiUrl(walletNetwork);
     } else if (network === 'devnet') {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_DEVNET;
       if (customEndpoint && customEndpoint.trim() !== '') {
         console.log('Using custom devnet RPC endpoint');
         return customEndpoint;
       }
+      console.log('Using public devnet RPC endpoint');
+      return clusterApiUrl(walletNetwork);
     }
     
-    // Fall back to public endpoints
-    console.log('Using public RPC endpoint (may have rate limits)');
+    // Fall back to cluster API URL for other networks
+    console.log('Using default RPC endpoint');
     return clusterApiUrl(walletNetwork);
   }, [network, walletNetwork]);
 

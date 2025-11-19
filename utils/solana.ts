@@ -248,6 +248,22 @@ export async function createTokenWithMetadata(
   } catch (error) {
     console.error('Error creating token with Metaplex metadata:', error);
     
+    // Check if this is a 403 error from RPC endpoint
+    if (error instanceof Error && (error.message.includes('403') || error.message.includes('Access forbidden'))) {
+      const rpcError = new Error(
+        '❌ RPC Error 403: Access Forbidden\n\n' +
+        'The Solana RPC endpoint is rate-limiting your requests. This usually happens when using the public RPC endpoint without a custom configuration.\n\n' +
+        '🔧 How to fix:\n' +
+        '1. Get a free RPC API key from Helius (https://helius.dev) or QuickNode (https://quicknode.com)\n' +
+        '2. Create a .env.local file in your project root\n' +
+        '3. Add: NEXT_PUBLIC_SOLANA_RPC_MAINNET=your_rpc_url\n' +
+        '4. Restart your application\n\n' +
+        'See the RPC Configuration Guide for detailed instructions:\n' +
+        'https://github.com/ALEX-SHR-SUDO/metafrontend/blob/main/RPC_CONFIGURATION.md'
+      );
+      throw rpcError;
+    }
+    
     // If this is a SendTransactionError, get detailed logs
     if (error instanceof SendTransactionError) {
       console.error('Transaction simulation failed. Getting detailed logs...');
@@ -437,6 +453,22 @@ export async function addMetadataToExistingToken(
     return signature;
   } catch (error) {
     console.error('Error adding metadata to existing token:', error);
+    
+    // Check if this is a 403 error from RPC endpoint
+    if (error instanceof Error && (error.message.includes('403') || error.message.includes('Access forbidden'))) {
+      const rpcError = new Error(
+        '❌ RPC Error 403: Access Forbidden\n\n' +
+        'The Solana RPC endpoint is rate-limiting your requests. This usually happens when using the public RPC endpoint without a custom configuration.\n\n' +
+        '🔧 How to fix:\n' +
+        '1. Get a free RPC API key from Helius (https://helius.dev) or QuickNode (https://quicknode.com)\n' +
+        '2. Create a .env.local file in your project root\n' +
+        '3. Add: NEXT_PUBLIC_SOLANA_RPC_MAINNET=your_rpc_url\n' +
+        '4. Restart your application\n\n' +
+        'See the RPC Configuration Guide for detailed instructions:\n' +
+        'https://github.com/ALEX-SHR-SUDO/metafrontend/blob/main/RPC_CONFIGURATION.md'
+      );
+      throw rpcError;
+    }
     
     // If this is a SendTransactionError, get detailed logs
     if (error instanceof SendTransactionError) {

@@ -54,7 +54,7 @@ Edit `.env.local`:
 # Solana Network (devnet, testnet, or mainnet-beta)
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
-# Custom RPC Endpoints (Recommended for production to avoid 403 errors)
+# Custom RPC Endpoints (REQUIRED for mainnet to avoid 403 errors)
 # Get free API keys from Helius, QuickNode, or Alchemy
 NEXT_PUBLIC_SOLANA_RPC_MAINNET=https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY
 NEXT_PUBLIC_SOLANA_RPC_DEVNET=https://devnet.helius-rpc.com/?api-key=YOUR_API_KEY
@@ -63,7 +63,7 @@ NEXT_PUBLIC_SOLANA_RPC_DEVNET=https://devnet.helius-rpc.com/?api-key=YOUR_API_KE
 NEXT_PUBLIC_BACKEND_URL=https://metabackend-c4e4.onrender.com
 ```
 
-**Important**: For production use, configure custom RPC endpoints to avoid rate limiting. See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for details.
+**⚠️ IMPORTANT**: Custom RPC endpoints are **REQUIRED** for mainnet usage. Public Solana RPC endpoints have strict rate limits and **WILL cause 403 errors** during token operations. See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for step-by-step setup instructions.
 
 ### Development
 
@@ -164,11 +164,24 @@ Configure via `NEXT_PUBLIC_SOLANA_NETWORK` environment variable.
 
 ## Troubleshooting
 
-### "403 Error" or "Access Forbidden"
-The public Solana RPC endpoints are rate-limited. Solution:
-- **Get a free RPC endpoint** from [Helius](https://helius.dev), [QuickNode](https://quicknode.com), or [Alchemy](https://alchemy.com)
-- Configure `NEXT_PUBLIC_SOLANA_RPC_MAINNET` and `NEXT_PUBLIC_SOLANA_RPC_DEVNET` in `.env.local`
-- See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for detailed setup instructions
+### ⚠️ "403 Error" or "Access Forbidden" (MOST COMMON ISSUE)
+This is the **most common error** and happens when using public Solana RPC endpoints which are heavily rate-limited. 
+
+**Solution (Required for mainnet):**
+1. **Get a FREE RPC endpoint** from:
+   - [Helius](https://helius.dev) (Recommended - easy setup, reliable)
+   - [QuickNode](https://quicknode.com) 
+   - [Alchemy](https://alchemy.com)
+2. Create `.env.local` file in project root
+3. Add your RPC endpoint:
+   ```env
+   NEXT_PUBLIC_SOLANA_RPC_MAINNET=https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY
+   ```
+4. Restart your development server
+
+**See [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) for complete step-by-step instructions.**
+
+The application will show a warning banner when on mainnet without a configured RPC endpoint.
 
 ### "Cannot connect to backend"
 The backend might be sleeping (Render free tier). Wait 30-60 seconds and try again.
