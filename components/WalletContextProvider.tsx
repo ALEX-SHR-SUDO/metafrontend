@@ -34,7 +34,7 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET;
       if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom mainnet RPC endpoint');
-        return customEndpoint as string;
+        return customEndpoint;
       }
       // For mainnet without a custom endpoint, strongly recommend setting one
       console.warn(
@@ -48,7 +48,7 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_DEVNET;
       if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom devnet RPC endpoint');
-        return customEndpoint as string;
+        return customEndpoint;
       }
       console.log('Using public devnet RPC endpoint');
       return clusterApiUrl(walletNetwork);
