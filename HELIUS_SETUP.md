@@ -15,8 +15,9 @@ The following environment variables have been set in `.env.local`:
 - **NEXT_PUBLIC_SOLANA_NETWORK**: `mainnet-beta`
   - The application is configured to use Solana mainnet
   
-- **NEXT_PUBLIC_SOLANA_RPC_MAINNET**: `https://mainnet.helius-rpc.com/?api-key=da6dbe0f-02d4-4470-9138-8928a683cec4`
+- **NEXT_PUBLIC_SOLANA_RPC_MAINNET**: `https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY`
   - Custom Helius RPC endpoint with API key for mainnet
+  - Note: The actual API key is stored securely in `.env.local` (not committed to git)
 
 - **NEXT_PUBLIC_BACKEND_URL**: `https://metabackend-c4e4.onrender.com`
   - Backend service for IPFS uploads via Pinata
