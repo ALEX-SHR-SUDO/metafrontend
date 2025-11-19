@@ -27,13 +27,26 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
   // Convert our network type to WalletAdapterNetwork
   const walletNetwork = network === 'mainnet-beta' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet;
   
+  // Helper function to validate RPC endpoint
+  const isValidRpcEndpoint = (endpoint: string | undefined): boolean => {
+    if (!endpoint || endpoint.trim() === '') {
+      return false;
+    }
+    // Check if endpoint contains placeholder text
+    const placeholders = ['YOUR_API_KEY', 'YOUR_KEY', 'REPLACE_ME', 'API_KEY_HERE'];
+    const hasPlaceholder = placeholders.some(placeholder => 
+      endpoint.toUpperCase().includes(placeholder)
+    );
+    return !hasPlaceholder;
+  };
+
   // Use custom RPC endpoints if provided, otherwise fall back to public endpoints
   const endpoint = useMemo(() => {
     if (network === 'mainnet-beta') {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET;
-      if (customEndpoint && customEndpoint.trim() !== '') {
+      if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom mainnet RPC endpoint');
-        return customEndpoint;
+        return customEndpoint!; // Non-null assertion safe here due to validation
       }
       // For mainnet without a custom endpoint, strongly recommend setting one
       console.warn(
@@ -45,9 +58,9 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
       return clusterApiUrl(walletNetwork);
     } else if (network === 'devnet') {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_DEVNET;
-      if (customEndpoint && customEndpoint.trim() !== '') {
+      if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom devnet RPC endpoint');
-        return customEndpoint;
+        return customEndpoint!; // Non-null assertion safe here due to validation
       }
       console.log('Using public devnet RPC endpoint');
       return clusterApiUrl(walletNetwork);
