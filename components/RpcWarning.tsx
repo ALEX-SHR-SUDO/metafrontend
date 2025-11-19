@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNetwork } from '@/contexts/NetworkContext';
+import { isValidRpcEndpoint } from '@/utils/rpc';
 
 export function RpcWarning() {
   const { isMainnet } = useNetwork();
@@ -9,19 +10,6 @@ export function RpcWarning() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Helper function to validate RPC endpoint
-    const isValidRpcEndpoint = (endpoint: string | undefined): boolean => {
-      if (!endpoint || endpoint.trim() === '') {
-        return false;
-      }
-      // Check if endpoint contains placeholder text
-      const placeholders = ['YOUR_API_KEY', 'YOUR_KEY', 'REPLACE_ME', 'API_KEY_HERE'];
-      const hasPlaceholder = placeholders.some(placeholder => 
-        endpoint.toUpperCase().includes(placeholder)
-      );
-      return !hasPlaceholder;
-    };
-
     // Only show warning on mainnet when no custom RPC is configured
     if (isMainnet) {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET;

@@ -7,6 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useNetwork } from '@/contexts/NetworkContext';
+import { isValidRpcEndpoint } from '@/utils/rpc';
 
 // Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -27,19 +28,6 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
   // Convert our network type to WalletAdapterNetwork
   const walletNetwork = network === 'mainnet-beta' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet;
   
-  // Helper function to validate RPC endpoint
-  const isValidRpcEndpoint = (endpoint: string | undefined): boolean => {
-    if (!endpoint || endpoint.trim() === '') {
-      return false;
-    }
-    // Check if endpoint contains placeholder text
-    const placeholders = ['YOUR_API_KEY', 'YOUR_KEY', 'REPLACE_ME', 'API_KEY_HERE'];
-    const hasPlaceholder = placeholders.some(placeholder => 
-      endpoint.toUpperCase().includes(placeholder)
-    );
-    return !hasPlaceholder;
-  };
-
   // Use custom RPC endpoints if provided, otherwise fall back to public endpoints
   const endpoint = useMemo(() => {
     if (network === 'mainnet-beta') {
