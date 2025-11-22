@@ -13,6 +13,18 @@ https://metabackend-c4e4.onrender.com
 
 ## 🚀 Deploying to Vercel
 
+### ⚠️ CRITICAL: RPC Configuration for Mainnet
+
+**If you're deploying to mainnet**, you MUST configure custom RPC endpoints in Vercel to avoid 403 errors. See [VERCEL_RPC_SETUP.md](./VERCEL_RPC_SETUP.md) for detailed instructions.
+
+Quick steps:
+1. Get a free RPC endpoint from [Helius](https://helius.dev) or [QuickNode](https://quicknode.com)
+2. In Vercel Dashboard → Project Settings → Environment Variables, add:
+   - **Key**: `NEXT_PUBLIC_SOLANA_RPC_MAINNET`
+   - **Value**: Your RPC URL (e.g., `https://mainnet.helius-rpc.com/?api-key=YOUR_KEY`)
+   - **Environment**: Select "Production" (or "All")
+3. **REDEPLOY** your application after setting the environment variable
+
 ### Option 1: Using Default Configuration (Recommended)
 The code now uses the production backend by default. Simply deploy to Vercel:
 
@@ -44,6 +56,7 @@ If you need different backend URLs for different environments:
    - Go to Deployments tab
    - Click on the three dots next to your latest deployment
    - Click "Redeploy"
+   - ⚠️ Make sure "Use existing Build Cache" is **UNCHECKED** when redeploying after setting environment variables
 
 ## 🧪 Local Development
 
