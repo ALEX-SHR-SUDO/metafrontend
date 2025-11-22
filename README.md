@@ -42,8 +42,11 @@ cd metafrontend
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env.local
+# Run interactive setup (recommended)
+npm run setup
+
+# OR manually copy environment template
+# cp .env.example .env.local
 ```
 
 ### Environment Variables
