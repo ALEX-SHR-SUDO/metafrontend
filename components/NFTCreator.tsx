@@ -109,7 +109,7 @@ export default function NFTCreator() {
     }
 
     setLoading(true);
-    setError('NFT creation feature is coming soon! This is a placeholder for the NFT creation functionality.');
+    setStatus('NFT creation feature is coming soon! This is a placeholder for the NFT creation functionality.');
     setLoading(false);
   };
 
