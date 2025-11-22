@@ -122,6 +122,12 @@ Quick steps:
 
 **Transaction costs**: ~0.01-0.02 SOL
 
+**⏱️ Important**: After creating your token:
+- Check the browser console (F12) for verification URLs
+- Wait **30-60 seconds** for Solscan to index your metadata
+- Verify on Solana Explorer first (more reliable for immediate verification)
+- If metadata doesn't show on Solscan, see [NEW_TOKEN_METADATA_GUIDE.md](./NEW_TOKEN_METADATA_GUIDE.md)
+
 ### Adding Metadata to Existing Tokens
 
 1. Navigate to `/add-metadata`
@@ -165,10 +171,11 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 
 ## Documentation
 
-- [TROUBLESHOOTING_SOLSCAN.md](./TROUBLESHOOTING_SOLSCAN.md) - **Comprehensive guide** for metadata visibility issues on Solscan
+- [NEW_TOKEN_METADATA_GUIDE.md](./NEW_TOKEN_METADATA_GUIDE.md) - **Why new token metadata doesn't show on Solscan** (READ THIS FIRST if you just created a token)
+- [TROUBLESHOOTING_SOLSCAN.md](./TROUBLESHOOTING_SOLSCAN.md) - **Comprehensive troubleshooting** for metadata visibility issues
+- [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) - Guide for adding metadata to existing tokens
 - [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) - **Fix 403 errors** with custom RPC setup
 - [VERCEL_RPC_SETUP.md](./VERCEL_RPC_SETUP.md) - **Vercel-specific RPC configuration** (for deployments)
-- [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) - Guide for adding metadata to existing tokens
 - [METADATA_FIX.md](./METADATA_FIX.md) - Technical details about metadata implementation
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deployment instructions
 - [BACKEND_CONFIGURATION.md](./BACKEND_CONFIGURATION.md) - Backend setup
