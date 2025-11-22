@@ -109,8 +109,73 @@ export default function NFTCreator() {
     }
 
     setLoading(true);
-    setStatus('NFT creation feature is coming soon! This is a placeholder for the NFT creation functionality.');
-    setLoading(false);
+
+    try {
+      // Step 1: Upload image to IPFS
+      setStatus('Uploading image to IPFS...');
+      const { uploadImageToPinata } = await import('@/utils/pinata');
+      const imageUri = await uploadImageToPinata(imageFile);
+      console.log('Image uploaded to IPFS:', imageUri);
+
+      // Step 2: Create metadata object
+      setStatus('Creating metadata...');
+      const metadata = {
+        name: formData.name,
+        symbol: formData.symbol,
+        description: formData.description,
+        image: imageUri,
+        external_url: formData.externalUrl || undefined,
+        seller_fee_basis_points: formData.sellerFeeBasisPoints,
+        attributes: formData.attributes.length > 0 ? formData.attributes : undefined,
+      };
+
+      // Step 3: Upload metadata to IPFS
+      setStatus('Uploading metadata to IPFS...');
+      const { uploadMetadataToPinata } = await import('@/utils/pinata');
+      const metadataUri = await uploadMetadataToPinata(metadata);
+      console.log('Metadata uploaded to IPFS:', metadataUri);
+
+      // Step 4: Create NFT on Solana
+      setStatus('Creating NFT on Solana blockchain...');
+      const { createNFT } = await import('@/utils/solana');
+      const nftMetadata = {
+        name: formData.name,
+        symbol: formData.symbol,
+        description: formData.description,
+        image: imageUri,
+        externalUrl: formData.externalUrl,
+        sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
+        attributes: formData.attributes,
+      };
+
+      const mintAddr = await createNFT(
+        connection,
+        publicKey,
+        nftMetadata,
+        metadataUri,
+        wallet.signTransaction
+      );
+
+      setMintAddress(mintAddr);
+      setStatus('NFT created successfully! 🎉');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        symbol: '',
+        description: '',
+        externalUrl: '',
+        sellerFeeBasisPoints: 500,
+        attributes: [],
+      });
+      setImageFile(null);
+      setImagePreview('');
+    } catch (err) {
+      console.error('Error creating NFT:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create NFT');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
