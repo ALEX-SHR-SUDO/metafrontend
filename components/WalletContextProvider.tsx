@@ -38,9 +38,11 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
       // For mainnet without a custom endpoint, strongly recommend setting one
       console.warn(
         '⚠️ No custom RPC endpoint configured for mainnet! ' +
-        'Public endpoints have strict rate limits and may return 403 errors. ' +
-        'Set NEXT_PUBLIC_SOLANA_RPC_MAINNET in .env.local. ' +
-        'Get a free endpoint from: https://helius.dev or https://quicknode.com'
+        'Public endpoints have strict rate limits and may return 403 errors.\n' +
+        '📦 For Vercel: Add NEXT_PUBLIC_SOLANA_RPC_MAINNET in Vercel environment variables and REDEPLOY.\n' +
+        '💻 For Local: Set NEXT_PUBLIC_SOLANA_RPC_MAINNET in .env.local.\n' +
+        '🔗 Get a free endpoint from: https://helius.dev or https://quicknode.com\n' +
+        '📖 See VERCEL_RPC_SETUP.md for detailed instructions.'
       );
       return clusterApiUrl(walletNetwork);
     } else if (network === 'devnet') {

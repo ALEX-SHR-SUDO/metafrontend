@@ -54,9 +54,13 @@ export function RpcWarning() {
               <h4 className="font-medium">How to fix:</h4>
               <ol className="list-decimal ml-5 mt-1 space-y-1">
                 <li>Get a free RPC endpoint from <a href="https://helius.dev" target="_blank" rel="noopener noreferrer" className="underline font-medium">Helius</a> or <a href="https://quicknode.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">QuickNode</a></li>
-                <li>Create a <code className="bg-yellow-100 px-1 rounded">.env.local</code> file in your project root</li>
-                <li>Add: <code className="bg-yellow-100 px-1 rounded">NEXT_PUBLIC_SOLANA_RPC_MAINNET=your_rpc_url</code></li>
-                <li>Restart your development server</li>
+                <li>
+                  <strong>For Vercel/Production:</strong> Add environment variable in Vercel Dashboard and redeploy.
+                  See <a href="https://github.com/ALEX-SHR-SUDO/metafrontend/blob/main/VERCEL_RPC_SETUP.md" target="_blank" rel="noopener noreferrer" className="underline font-medium">Vercel Setup Guide</a>
+                </li>
+                <li>
+                  <strong>For Local Development:</strong> Create <code className="bg-yellow-100 px-1 rounded">.env.local</code> file with <code className="bg-yellow-100 px-1 rounded">NEXT_PUBLIC_SOLANA_RPC_MAINNET=your_rpc_url</code> and restart server
+                </li>
               </ol>
               <p className="mt-2">
                 See the <a href="https://github.com/ALEX-SHR-SUDO/metafrontend/blob/main/RPC_CONFIGURATION.md" target="_blank" rel="noopener noreferrer" className="underline font-medium">RPC Configuration Guide</a> for detailed instructions.
