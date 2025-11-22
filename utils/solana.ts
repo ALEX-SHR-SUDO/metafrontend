@@ -131,6 +131,11 @@ export async function createTokenWithMetadata(
       }
     });
 
+    // Calculate the metadata PDA for logging purposes
+    const mintUmiPublicKey = fromWeb3JsPublicKey(mintPublicKey);
+    const metadataPda = findMetadataPda(umi, { mint: mintUmiPublicKey });
+    console.log('Calculated metadata PDA:', metadataPda[0].toString());
+    
     // Build the createV1 instruction for metadata
     const createMetadataIx = createV1(umi, {
       mint: mintUmiSigner,
@@ -231,18 +236,28 @@ export async function createTokenWithMetadata(
       lastValidBlockHeight,
     }, 'confirmed');
 
+    // Determine cluster for URLs based on RPC endpoint
+    const cluster = connection.rpcEndpoint.includes('devnet') ? 'devnet' : 
+                   connection.rpcEndpoint.includes('testnet') ? 'testnet' : 'mainnet-beta';
+    
     console.log('✅ Token created successfully!');
     console.log('✅ Mint address:', mintPublicKey.toString());
+    console.log('✅ Metadata account address:', metadataPda[0].toString());
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
-    console.log('✅ Metadata should now be visible on Solscan.io');
+    console.log('✅ Update authority:', payer.toString());
+    console.log('✅ Metadata should now be visible on Solscan.io (wait 30-60 seconds for indexing)');
     if (revokeMintAuthority) {
       console.log('✅ Mint authority revoked - token supply is now fixed');
     }
     if (revokeFreezeAuthority) {
       console.log('✅ Freeze authority revoked - token accounts cannot be frozen');
     }
-    console.log('Transaction signature:', signature);
+    console.log('✅ Transaction signature:', signature);
+    console.log('\n📋 Verification URLs:');
+    console.log(`   Metadata Account: https://explorer.solana.com/address/${metadataPda[0].toString()}?cluster=${cluster}`);
+    console.log(`   Token on Solscan: https://solscan.io/token/${mintPublicKey.toString()}?cluster=${cluster}`);
+    console.log(`   Metadata JSON: ${metadataUri}`);
 
     return mintPublicKey.toString();
   } catch (error) {
@@ -440,15 +455,23 @@ export async function addMetadataToExistingToken(
       lastValidBlockHeight,
     }, 'confirmed');
 
+    // Determine cluster for URLs based on RPC endpoint
+    const cluster = connection.rpcEndpoint.includes('devnet') ? 'devnet' : 
+                   connection.rpcEndpoint.includes('testnet') ? 'testnet' : 'mainnet-beta';
+    
     const action = existingMetadata ? 'updated' : 'added';
     console.log(`✅ Metadata ${action} successfully!`);
     console.log('✅ Mint address:', mintPublicKey.toString());
     console.log('✅ Metadata account address:', metadataPda[0].toString());
     console.log(`✅ On-chain metadata ${action} via Metaplex Token Metadata Program`);
     console.log('✅ Metadata URI:', metadataUri);
-    console.log('✅ Metadata should now be visible on Solscan.io');
     console.log('✅ Update authority:', payerUmiPublicKey.toString());
-    console.log('Transaction signature:', signature);
+    console.log('✅ Metadata should now be visible on Solscan.io (wait 30-60 seconds for indexing)');
+    console.log('✅ Transaction signature:', signature);
+    console.log('\n📋 Verification URLs:');
+    console.log(`   Metadata Account: https://explorer.solana.com/address/${metadataPda[0].toString()}?cluster=${cluster}`);
+    console.log(`   Token on Solscan: https://solscan.io/token/${mintPublicKey.toString()}?cluster=${cluster}`);
+    console.log(`   Metadata JSON: ${metadataUri}`);
 
     return signature;
   } catch (error) {

@@ -165,6 +165,7 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 
 ## Documentation
 
+- [TROUBLESHOOTING_SOLSCAN.md](./TROUBLESHOOTING_SOLSCAN.md) - **Comprehensive guide** for metadata visibility issues on Solscan
 - [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) - **Fix 403 errors** with custom RPC setup
 - [VERCEL_RPC_SETUP.md](./VERCEL_RPC_SETUP.md) - **Vercel-specific RPC configuration** (for deployments)
 - [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) - Guide for adding metadata to existing tokens
@@ -211,10 +212,16 @@ The backend might be sleeping (Render free tier). Wait 30-60 seconds and try aga
 - For adding metadata: ensure you're the mint authority
 - The app automatically handles both creating new metadata and updating existing metadata
 
-### Token doesn't show on Solscan
-- Wait a few seconds and refresh
-- Verify the transaction succeeded on Solana Explorer
-- Check you're viewing the correct network (devnet/mainnet)
+### Token metadata doesn't show on Solscan
+This is a common issue with several possible causes. **See [TROUBLESHOOTING_SOLSCAN.md](./TROUBLESHOOTING_SOLSCAN.md) for a comprehensive troubleshooting guide.**
+
+Quick checklist:
+- ⏱️ **Wait 60 seconds** - Solscan needs time to index new metadata
+- 🔄 **Refresh the page** - Clear cache or try incognito mode
+- ✅ **Verify transaction** - Check console logs for success messages
+- 🌐 **Check network** - Ensure you're viewing the correct network (devnet/mainnet)
+- 🔍 **Verify on Solana Explorer** - More reliable than Solscan for immediate verification
+- 📋 **Check metadata account** - Look for the metadata PDA address in console logs
 
 ## Development Workflow
 

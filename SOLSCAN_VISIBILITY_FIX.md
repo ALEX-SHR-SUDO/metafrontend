@@ -110,6 +110,8 @@ For users experiencing the issue:
 4. **Verify on Solana Explorer** first if Solscan doesn't show it immediately
 5. **Clear browser cache** or try incognito mode
 
+**📘 For detailed troubleshooting steps, see [TROUBLESHOOTING_SOLSCAN.md](./TROUBLESHOOTING_SOLSCAN.md)**
+
 ## Expected Results
 
 After applying this fix:
