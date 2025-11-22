@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { NetworkProvider } from '@/contexts/NetworkContext';
 import { WalletContextProvider } from '@/components/WalletContextProvider';
+import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: {
@@ -21,7 +22,10 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <NetworkProvider>
           <WalletContextProvider>
-            {children}
+            <Sidebar />
+            <div className="ml-64">
+              {children}
+            </div>
           </WalletContextProvider>
         </NetworkProvider>
       </body>
