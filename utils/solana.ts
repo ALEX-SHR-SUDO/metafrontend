@@ -57,6 +57,18 @@ export interface ExistingTokenMetadata {
   image: string;
 }
 
+/**
+ * Helper function to determine the Solana cluster from RPC endpoint
+ */
+function getClusterFromRpcEndpoint(rpcEndpoint: string): string {
+  if (rpcEndpoint.includes('devnet')) {
+    return 'devnet';
+  } else if (rpcEndpoint.includes('testnet')) {
+    return 'testnet';
+  }
+  return 'mainnet-beta';
+}
+
 export async function createTokenWithMetadata(
   connection: Connection,
   payer: PublicKey,
@@ -132,8 +144,8 @@ export async function createTokenWithMetadata(
     });
 
     // Calculate the metadata PDA for logging purposes
-    const mintUmiPublicKey = fromWeb3JsPublicKey(mintPublicKey);
-    const metadataPda = findMetadataPda(umi, { mint: mintUmiPublicKey });
+    // Use the mint public key from the signer
+    const metadataPda = findMetadataPda(umi, { mint: mintUmiSigner.publicKey });
     console.log('Calculated metadata PDA:', metadataPda[0].toString());
     
     // Build the createV1 instruction for metadata
@@ -237,8 +249,7 @@ export async function createTokenWithMetadata(
     }, 'confirmed');
 
     // Determine cluster for URLs based on RPC endpoint
-    const cluster = connection.rpcEndpoint.includes('devnet') ? 'devnet' : 
-                   connection.rpcEndpoint.includes('testnet') ? 'testnet' : 'mainnet-beta';
+    const cluster = getClusterFromRpcEndpoint(connection.rpcEndpoint);
     
     console.log('✅ Token created successfully!');
     console.log('✅ Mint address:', mintPublicKey.toString());
@@ -456,8 +467,7 @@ export async function addMetadataToExistingToken(
     }, 'confirmed');
 
     // Determine cluster for URLs based on RPC endpoint
-    const cluster = connection.rpcEndpoint.includes('devnet') ? 'devnet' : 
-                   connection.rpcEndpoint.includes('testnet') ? 'testnet' : 'mainnet-beta';
+    const cluster = getClusterFromRpcEndpoint(connection.rpcEndpoint);
     
     const action = existingMetadata ? 'updated' : 'added';
     console.log(`✅ Metadata ${action} successfully!`);
