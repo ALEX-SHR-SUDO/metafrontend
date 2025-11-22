@@ -87,6 +87,21 @@ npm run build
 npm start
 ```
 
+### Deploying to Vercel
+
+**⚠️ CRITICAL**: If you're deploying to Vercel and using mainnet, you **MUST** configure environment variables in Vercel **BEFORE** or **AFTER** deployment, and then **REDEPLOY**.
+
+Quick steps:
+1. Get a free RPC endpoint from [Helius](https://helius.dev) or [QuickNode](https://quicknode.com)
+2. In Vercel Dashboard → Project Settings → Environment Variables, add:
+   - **Key**: `NEXT_PUBLIC_SOLANA_RPC_MAINNET`
+   - **Value**: Your RPC URL (e.g., `https://mainnet.helius-rpc.com/?api-key=YOUR_KEY`)
+   - **Environment**: Select "Production" (or "All")
+3. **REDEPLOY** your application (Vercel → Deployments → Redeploy)
+4. Verify in browser console: should see "Using custom mainnet RPC endpoint"
+
+**📖 See [VERCEL_RPC_SETUP.md](./VERCEL_RPC_SETUP.md) for detailed step-by-step instructions with screenshots.**
+
 ## Usage
 
 ### Creating a New Token
@@ -151,6 +166,7 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 ## Documentation
 
 - [RPC_CONFIGURATION.md](./RPC_CONFIGURATION.md) - **Fix 403 errors** with custom RPC setup
+- [VERCEL_RPC_SETUP.md](./VERCEL_RPC_SETUP.md) - **Vercel-specific RPC configuration** (for deployments)
 - [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) - Guide for adding metadata to existing tokens
 - [METADATA_FIX.md](./METADATA_FIX.md) - Technical details about metadata implementation
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deployment instructions
