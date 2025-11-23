@@ -7,6 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useNetwork } from '@/contexts/NetworkContext';
+import { isValidRpcEndpoint } from '@/utils/rpc';
 
 // Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -31,7 +32,7 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
   const endpoint = useMemo(() => {
     if (network === 'mainnet-beta') {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET;
-      if (customEndpoint && customEndpoint.trim() !== '') {
+      if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom mainnet RPC endpoint');
         return customEndpoint;
       }
@@ -47,7 +48,7 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
       return clusterApiUrl(walletNetwork);
     } else if (network === 'devnet') {
       const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_DEVNET;
-      if (customEndpoint && customEndpoint.trim() !== '') {
+      if (isValidRpcEndpoint(customEndpoint)) {
         console.log('Using custom devnet RPC endpoint');
         return customEndpoint;
       }

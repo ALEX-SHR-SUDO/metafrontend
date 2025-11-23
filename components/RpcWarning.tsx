@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNetwork } from '@/contexts/NetworkContext';
+import { isValidRpcEndpoint } from '@/utils/rpc';
 
 export function RpcWarning() {
   const { isMainnet } = useNetwork();
@@ -11,13 +12,13 @@ export function RpcWarning() {
   useEffect(() => {
     // Only show warning on mainnet when no custom RPC is configured
     if (isMainnet) {
-      const hasCustomRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET && 
-                          process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET.trim() !== '';
+      const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET;
+      const hasValidRpc = isValidRpcEndpoint(customEndpoint);
       
       // Check if user has dismissed the warning before
       const isDismissed = localStorage.getItem('rpc-warning-dismissed') === 'true';
       
-      setShowWarning(!hasCustomRpc && !isDismissed);
+      setShowWarning(!hasValidRpc && !isDismissed);
     } else {
       setShowWarning(false);
     }
