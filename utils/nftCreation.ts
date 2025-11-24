@@ -1,5 +1,5 @@
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { createNFT, NFTMetadata } from './solana';
+import { createNFT, NFTMetadata } from './nftToken';
 
 /**
  * Interface for NFT creation input data from the form
