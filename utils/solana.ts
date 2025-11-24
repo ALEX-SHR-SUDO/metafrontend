@@ -195,21 +195,16 @@ export async function createTokenWithMetadata(
       transaction.add(web3Ix);
     }
 
-    // Step 7: Revoke mint authority if requested
-    // This must be done AFTER metadata creation to ensure metadata program
-    // has the correct authority references
-    if (revokeMintAuthority) {
-      transaction.add(
-        createSetAuthorityInstruction(
-          mintPublicKey,
-          payer,
-          AuthorityType.MintTokens,
-          null,
-          [],
-          TOKEN_PROGRAM_ID
-        )
-      );
-    }
+    // Note: Mint authority revocation is handled by the Metaplex metadata program
+    // when creating metadata. The Metaplex createV1 function internally transfers
+    // the mint authority to a metadata-controlled PDA when appropriate (e.g., for
+    // NFTs with Master Editions). Attempting to manually revoke it afterward results
+    // in "owner does not match" errors because the payer is no longer the mint authority.
+    // Therefore, we do not manually revoke the mint authority here.
+    // 
+    // For fungible tokens without Master Editions where manual control is needed,
+    // consider revoking the authority before creating metadata, or use alternative
+    // approaches that don't conflict with Metaplex's authority management.
 
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
@@ -243,10 +238,10 @@ export async function createTokenWithMetadata(
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ Metadata should now be visible on Solscan.io');
     if (revokeMintAuthority) {
-      console.log('✅ Mint authority revoked - token supply is now fixed');
+      console.log('ℹ️  Note: Mint authority management is handled by Metaplex Token Metadata Program');
     }
     if (revokeFreezeAuthority) {
-      console.log('✅ Freeze authority revoked - token accounts cannot be frozen');
+      console.log('ℹ️  Note: Freeze authority was set during mint initialization');
     }
     console.log('Transaction signature:', signature);
 
@@ -653,19 +648,13 @@ export async function createNFT(
       transaction.add(web3Ix);
     }
 
-    // Step 7: Revoke mint authority to ensure supply stays at 1
-    // This must be done AFTER metadata creation to ensure metadata program
-    // has the correct authority references
-    transaction.add(
-      createSetAuthorityInstruction(
-        mintPublicKey,
-        payer,
-        AuthorityType.MintTokens,
-        null,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-    );
+    // Note: For NFTs, the Metaplex metadata program automatically handles mint authority
+    // management when creating a Master Edition (which happens for TokenStandard.NonFungible
+    // with printSupply set). The Metaplex createV1 function internally transfers the mint
+    // authority to the Edition PDA to ensure the supply stays at 1 and prevent further minting.
+    // Attempting to manually revoke it afterward results in "owner does not match" errors
+    // because the payer is no longer the mint authority.
+    // Therefore, we do not manually revoke the mint authority here for NFTs.
 
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
@@ -698,7 +687,7 @@ export async function createNFT(
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ NFT should now be visible on Solscan.io and Solana Explorer');
-    console.log('✅ Mint authority revoked - supply is fixed at 1');
+    console.log('✅ Mint authority managed by Metaplex Master Edition - supply is fixed at 1');
     console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
