@@ -26,6 +26,7 @@ import {
   TokenStandard,
   findMetadataPda,
   safeFetchMetadataFromSeeds,
+  printSupply,
 } from '@metaplex-foundation/mpl-token-metadata';
 import {
   percentAmount,
@@ -599,7 +600,7 @@ export async function createNFT(
       tokenStandard: TokenStandard.NonFungible, // NFT standard (not Fungible)
       collectionDetails: none(),
       creators: none(),
-      printSupply: none(),
+      printSupply: some(printSupply('Zero')), // NFTs require explicit print supply
       isMutable: true,
       primarySaleHappened: false,
     });
