@@ -1,6 +1,6 @@
-# Solana Token Creator with Metadata
+# Solana Token & NFT Creator with Metadata
 
-A Next.js application for creating SPL tokens on Solana blockchain with full on-chain metadata support using Metaplex Token Metadata Program.
+A Next.js application for creating SPL tokens and NFTs on Solana blockchain with full on-chain metadata support using Metaplex Token Metadata Program.
 
 ## Features
 
@@ -11,6 +11,15 @@ A Next.js application for creating SPL tokens on Solana blockchain with full on-
 - Configurable decimals and initial supply
 - Full integration with Solana wallet adapters
 
+### 🎭 Create NFTs
+- Create unique NFTs on Solana blockchain
+- Upload custom artwork to IPFS
+- Add rich metadata (name, symbol, description, external URL)
+- Configure royalties (seller fee basis points)
+- Add custom attributes and traits
+- Automatic mint authority revocation (fixed supply of 1)
+- Full Metaplex Token Metadata Program integration
+
 ### ✨ Add Metadata to Existing Tokens
 - Add metadata to tokens that were created without it
 - Retroactively make tokens visible on blockchain explorers
@@ -18,8 +27,8 @@ A Next.js application for creating SPL tokens on Solana blockchain with full on-
 - Link metadata to existing token mints
 
 ### 🔍 Blockchain Explorer Integration
-- Tokens display correctly on Solscan.io
-- Tokens display correctly on Solana Explorer
+- Tokens and NFTs display correctly on Solscan.io
+- Tokens and NFTs display correctly on Solana Explorer
 - Compatible with wallet applications
 - DEX platform support
 
@@ -122,6 +131,31 @@ Quick steps:
 
 **Transaction costs**: ~0.01-0.02 SOL
 
+### Creating an NFT
+
+1. Navigate to `/create-nft`
+2. Connect your Solana wallet
+3. Fill in NFT details:
+   - NFT name
+   - Symbol
+   - Description
+   - Upload artwork image
+   - External URL (optional)
+   - Royalties (seller fee basis points, default: 500 = 5%)
+   - Add custom attributes (optional)
+4. Click "Create NFT"
+5. Approve the transaction in your wallet
+6. Wait for confirmation
+7. Your NFT is now minted with supply of 1!
+
+**Features**:
+- Automatic mint authority revocation (ensures supply stays at 1)
+- Custom attributes and traits support
+- Royalty configuration
+- Full Metaplex Token Metadata integration
+
+**Transaction costs**: ~0.01-0.02 SOL
+
 ### Adding Metadata to Existing Tokens
 
 1. Navigate to `/add-metadata`
@@ -156,11 +190,13 @@ See [ADD_METADATA_GUIDE.md](./ADD_METADATA_GUIDE.md) for detailed instructions.
 
 ## Key Files
 
-- `utils/solana.ts` - Token creation and metadata functions
+- `utils/solana.ts` - Token and NFT creation, metadata functions
 - `utils/pinata.ts` - IPFS upload functions
 - `components/TokenCreator.tsx` - Create new token UI
+- `components/NFTCreator.tsx` - Create NFT UI
 - `components/AddMetadataToToken.tsx` - Add metadata UI
 - `app/page.tsx` - Home page (create token)
+- `app/create-nft/page.tsx` - NFT creation page
 - `app/add-metadata/page.tsx` - Add metadata page
 
 ## Documentation
