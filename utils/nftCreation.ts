@@ -2,6 +2,35 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createNFT, NFTMetadata } from './nftToken';
 
 /**
+ * Detect MIME type from file URI
+ * @param uri - The file URI
+ * @returns The MIME type string
+ */
+function detectImageMimeType(uri: string): string {
+  const lowerUri = uri.toLowerCase();
+  if (lowerUri.endsWith('.png')) return 'image/png';
+  if (lowerUri.endsWith('.jpg') || lowerUri.endsWith('.jpeg')) return 'image/jpeg';
+  if (lowerUri.endsWith('.gif')) return 'image/gif';
+  if (lowerUri.endsWith('.svg')) return 'image/svg+xml';
+  return 'image/png'; // default
+}
+
+/**
+ * Detect MIME type for animation/multimedia files
+ * @param uri - The file URI
+ * @returns The MIME type string
+ */
+function detectAnimationMimeType(uri: string): string {
+  const lowerUri = uri.toLowerCase();
+  if (lowerUri.endsWith('.mp4')) return 'video/mp4';
+  if (lowerUri.endsWith('.webm')) return 'video/webm';
+  if (lowerUri.endsWith('.mp3')) return 'audio/mp3';
+  if (lowerUri.endsWith('.wav')) return 'audio/wav';
+  if (lowerUri.endsWith('.glb')) return 'model/gltf-binary';
+  return 'video/mp4'; // default
+}
+
+/**
  * Interface for NFT creation input data from the form
  */
 export interface NFTFormData {
@@ -11,6 +40,8 @@ export interface NFTFormData {
   externalUrl: string;
   sellerFeeBasisPoints: number;
   attributes: Array<{ trait_type: string; value: string }>;
+  animationUrl?: string;
+  category?: string;
 }
 
 /**
@@ -28,7 +59,7 @@ export function formDataToNFTMetadata(
   formData: NFTFormData,
   imageUri: string
 ): NFTMetadata {
-  return {
+  const metadata: NFTMetadata = {
     name: formData.name,
     symbol: formData.symbol,
     description: formData.description,
@@ -37,10 +68,55 @@ export function formDataToNFTMetadata(
     sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
     attributes: formData.attributes,
   };
+
+  // Add optional fields
+  if (formData.animationUrl) {
+    metadata.animationUrl = formData.animationUrl;
+  }
+
+  // Build properties object if we have category or image files
+  const properties: NFTMetadata['properties'] = {};
+  let hasProperties = false;
+
+  if (formData.category) {
+    properties.category = formData.category;
+    hasProperties = true;
+  }
+
+  // Add image file to properties.files array
+  if (imageUri) {
+    properties.files = [
+      {
+        uri: imageUri,
+        type: detectImageMimeType(imageUri),
+      },
+    ];
+    hasProperties = true;
+  }
+
+  // Add animation URL to files if present
+  if (formData.animationUrl) {
+    if (!properties.files) {
+      properties.files = [];
+    }
+    properties.files.push({
+      uri: formData.animationUrl,
+      type: detectAnimationMimeType(formData.animationUrl),
+    });
+  }
+
+  if (hasProperties) {
+    metadata.properties = properties;
+  }
+
+  return metadata;
 }
 
 /**
  * Create metadata object for NFT
+ * This function creates JSON metadata following the Metaplex standard for IPFS upload.
+ * Note: The JSON metadata uses snake_case (external_url, animation_url) as per Metaplex standard,
+ * while TypeScript interfaces use camelCase (externalUrl, animationUrl) following JS conventions.
  * @param formData - The form data containing NFT information
  * @param imageUri - The IPFS URI of the uploaded image
  * @returns Metadata object ready for upload to IPFS
@@ -64,6 +140,45 @@ export function createNFTMetadata(
 
   if (formData.attributes.length > 0) {
     metadata.attributes = formData.attributes;
+  }
+
+  if (formData.animationUrl) {
+    metadata.animation_url = formData.animationUrl;
+  }
+
+  // Build properties object
+  const properties: Record<string, any> = {};
+  let hasProperties = false;
+
+  if (formData.category) {
+    properties.category = formData.category;
+    hasProperties = true;
+  }
+
+  // Add files array with image and animation
+  const files: Array<{ uri: string; type: string }> = [];
+  
+  if (imageUri) {
+    files.push({
+      uri: imageUri,
+      type: detectImageMimeType(imageUri),
+    });
+  }
+
+  if (formData.animationUrl) {
+    files.push({
+      uri: formData.animationUrl,
+      type: detectAnimationMimeType(formData.animationUrl),
+    });
+  }
+
+  if (files.length > 0) {
+    properties.files = files;
+    hasProperties = true;
+  }
+
+  if (hasProperties) {
+    metadata.properties = properties;
   }
 
   return metadata;
