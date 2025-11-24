@@ -2,6 +2,35 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createNFT, NFTMetadata } from './nftToken';
 
 /**
+ * Detect MIME type from file URI
+ * @param uri - The file URI
+ * @returns The MIME type string
+ */
+function detectImageMimeType(uri: string): string {
+  const lowerUri = uri.toLowerCase();
+  if (lowerUri.endsWith('.png')) return 'image/png';
+  if (lowerUri.endsWith('.jpg') || lowerUri.endsWith('.jpeg')) return 'image/jpeg';
+  if (lowerUri.endsWith('.gif')) return 'image/gif';
+  if (lowerUri.endsWith('.svg')) return 'image/svg+xml';
+  return 'image/png'; // default
+}
+
+/**
+ * Detect MIME type for animation/multimedia files
+ * @param uri - The file URI
+ * @returns The MIME type string
+ */
+function detectAnimationMimeType(uri: string): string {
+  const lowerUri = uri.toLowerCase();
+  if (lowerUri.endsWith('.mp4')) return 'video/mp4';
+  if (lowerUri.endsWith('.webm')) return 'video/webm';
+  if (lowerUri.endsWith('.mp3')) return 'audio/mp3';
+  if (lowerUri.endsWith('.wav')) return 'audio/wav';
+  if (lowerUri.endsWith('.glb')) return 'model/gltf-binary';
+  return 'video/mp4'; // default
+}
+
+/**
  * Interface for NFT creation input data from the form
  */
 export interface NFTFormData {
@@ -59,11 +88,7 @@ export function formDataToNFTMetadata(
     properties.files = [
       {
         uri: imageUri,
-        type: imageUri.toLowerCase().endsWith('.png') ? 'image/png' : 
-              imageUri.toLowerCase().endsWith('.jpg') || imageUri.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' :
-              imageUri.toLowerCase().endsWith('.gif') ? 'image/gif' :
-              imageUri.toLowerCase().endsWith('.svg') ? 'image/svg+xml' :
-              'image/png', // default to png
+        type: detectImageMimeType(imageUri),
       },
     ];
     hasProperties = true;
@@ -76,12 +101,7 @@ export function formDataToNFTMetadata(
     }
     properties.files.push({
       uri: formData.animationUrl,
-      type: formData.animationUrl.toLowerCase().endsWith('.mp4') ? 'video/mp4' :
-            formData.animationUrl.toLowerCase().endsWith('.webm') ? 'video/webm' :
-            formData.animationUrl.toLowerCase().endsWith('.mp3') ? 'audio/mp3' :
-            formData.animationUrl.toLowerCase().endsWith('.wav') ? 'audio/wav' :
-            formData.animationUrl.toLowerCase().endsWith('.glb') ? 'model/gltf-binary' :
-            'video/mp4', // default to mp4
+      type: detectAnimationMimeType(formData.animationUrl),
     });
   }
 
@@ -138,23 +158,14 @@ export function createNFTMetadata(
   if (imageUri) {
     files.push({
       uri: imageUri,
-      type: imageUri.toLowerCase().endsWith('.png') ? 'image/png' : 
-            imageUri.toLowerCase().endsWith('.jpg') || imageUri.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' :
-            imageUri.toLowerCase().endsWith('.gif') ? 'image/gif' :
-            imageUri.toLowerCase().endsWith('.svg') ? 'image/svg+xml' :
-            'image/png',
+      type: detectImageMimeType(imageUri),
     });
   }
 
   if (formData.animationUrl) {
     files.push({
       uri: formData.animationUrl,
-      type: formData.animationUrl.toLowerCase().endsWith('.mp4') ? 'video/mp4' :
-            formData.animationUrl.toLowerCase().endsWith('.webm') ? 'video/webm' :
-            formData.animationUrl.toLowerCase().endsWith('.mp3') ? 'audio/mp3' :
-            formData.animationUrl.toLowerCase().endsWith('.wav') ? 'audio/wav' :
-            formData.animationUrl.toLowerCase().endsWith('.glb') ? 'model/gltf-binary' :
-            'video/mp4',
+      type: detectAnimationMimeType(formData.animationUrl),
     });
   }
 
