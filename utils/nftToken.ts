@@ -14,8 +14,6 @@ import {
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
-  createSetAuthorityInstruction,
-  AuthorityType,
 } from '@solana/spl-token';
 import { 
   createUmi 
