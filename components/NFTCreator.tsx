@@ -7,15 +7,7 @@ import { getSolanaExplorerUrl } from '@/utils/helpers';
 import { useNetwork } from '@/contexts/NetworkContext';
 import NetworkSwitcher from './NetworkSwitcher';
 import { RpcWarning } from './RpcWarning';
-
-interface NFTFormData {
-  name: string;
-  symbol: string;
-  description: string;
-  externalUrl: string;
-  sellerFeeBasisPoints: number;
-  attributes: Array<{ trait_type: string; value: string }>;
-}
+import { NFTFormData, createNFTWithMetadata } from '@/utils/nftCreation';
 
 export default function NFTCreator() {
   const [mounted, setMounted] = useState(false);
@@ -111,49 +103,14 @@ export default function NFTCreator() {
     setLoading(true);
 
     try {
-      // Step 1: Upload image to IPFS
-      setStatus('Uploading image to IPFS...');
-      const { uploadImageToPinata } = await import('@/utils/pinata');
-      const imageUri = await uploadImageToPinata(imageFile);
-      console.log('Image uploaded to IPFS:', imageUri);
-
-      // Step 2: Create metadata object
-      setStatus('Creating metadata...');
-      const metadata = {
-        name: formData.name,
-        symbol: formData.symbol,
-        description: formData.description,
-        image: imageUri,
-        external_url: formData.externalUrl || undefined,
-        seller_fee_basis_points: formData.sellerFeeBasisPoints,
-        attributes: formData.attributes.length > 0 ? formData.attributes : undefined,
-      };
-
-      // Step 3: Upload metadata to IPFS
-      setStatus('Uploading metadata to IPFS...');
-      const { uploadMetadataToPinata } = await import('@/utils/pinata');
-      const metadataUri = await uploadMetadataToPinata(metadata);
-      console.log('Metadata uploaded to IPFS:', metadataUri);
-
-      // Step 4: Create NFT on Solana
-      setStatus('Creating NFT on Solana blockchain...');
-      const { createNFT } = await import('@/utils/solana');
-      const nftMetadata = {
-        name: formData.name,
-        symbol: formData.symbol,
-        description: formData.description,
-        image: imageUri,
-        externalUrl: formData.externalUrl,
-        sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
-        attributes: formData.attributes,
-      };
-
-      const mintAddr = await createNFT(
+      // Use the extracted NFT creation utility function
+      const mintAddr = await createNFTWithMetadata(
         connection,
         publicKey,
-        nftMetadata,
-        metadataUri,
-        wallet.signTransaction
+        formData,
+        imageFile,
+        wallet.signTransaction,
+        (status) => setStatus(status)
       );
 
       setMintAddress(mintAddr);
