@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | SPL Token Creator',
+    template: '%s | SPL Token & NFT Creator',
     default: 'SPL Token & NFT Creator | Create Solana Tokens and NFTs with Metadata',
   },
   description: 'Create SPL tokens and NFTs on Solana blockchain with custom metadata and artwork. Upload to IPFS via Pinata.',
