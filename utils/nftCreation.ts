@@ -19,6 +19,27 @@ export interface NFTFormData {
 export type StatusCallback = (status: string) => void;
 
 /**
+ * Convert form data to NFTMetadata object for Solana
+ * @param formData - The form data containing NFT information
+ * @param imageUri - The IPFS URI of the uploaded image
+ * @returns NFTMetadata object for Solana
+ */
+export function formDataToNFTMetadata(
+  formData: NFTFormData,
+  imageUri: string
+): NFTMetadata {
+  return {
+    name: formData.name,
+    symbol: formData.symbol,
+    description: formData.description,
+    image: imageUri,
+    externalUrl: formData.externalUrl,
+    sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
+    attributes: formData.attributes,
+  };
+}
+
+/**
  * Create metadata object for NFT
  * @param formData - The form data containing NFT information
  * @param imageUri - The IPFS URI of the uploaded image
@@ -89,15 +110,7 @@ export async function createNFTWithMetadata(
 
   // Step 4: Create NFT on Solana
   onStatusChange?.('Creating NFT on Solana blockchain...');
-  const nftMetadata: NFTMetadata = {
-    name: formData.name,
-    symbol: formData.symbol,
-    description: formData.description,
-    image: imageUri,
-    externalUrl: formData.externalUrl,
-    sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
-    attributes: formData.attributes,
-  };
+  const nftMetadata = formDataToNFTMetadata(formData, imageUri);
 
   const mintAddress = await createNFT(
     connection,
