@@ -114,6 +114,9 @@ export function formDataToNFTMetadata(
 
 /**
  * Create metadata object for NFT
+ * This function creates JSON metadata following the Metaplex standard for IPFS upload.
+ * Note: The JSON metadata uses snake_case (external_url, animation_url) as per Metaplex standard,
+ * while TypeScript interfaces use camelCase (externalUrl, animationUrl) following JS conventions.
  * @param formData - The form data containing NFT information
  * @param imageUri - The IPFS URI of the uploaded image
  * @returns Metadata object ready for upload to IPFS
