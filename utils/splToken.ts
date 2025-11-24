@@ -39,7 +39,7 @@ import {
   fromWeb3JsKeypair,
   fromWeb3JsPublicKey,
 } from '@metaplex-foundation/umi-web3js-adapters';
-import { calculateTokenAmount } from './helpers';
+import { calculateTokenAmount, createCreatorMetadata } from './helpers';
 
 export interface TokenMetadata {
   name: string;
@@ -180,13 +180,7 @@ export async function createTokenWithMetadata(
       decimals: some(metadata.decimals),
       tokenStandard: TokenStandard.Fungible,
       collectionDetails: none(),
-      creators: some([
-        {
-          address: payerUmiPublicKey,
-          verified: true, // Creator is verified when they sign the transaction
-          share: 100, // 100% of creator royalties
-        },
-      ]),
+      creators: some(createCreatorMetadata(payerUmiPublicKey)),
       printSupply: none(),
       isMutable: true,
       primarySaleHappened: false,
@@ -389,13 +383,7 @@ export async function addMetadataToExistingToken(
           symbol: metadata.symbol,
           uri: metadataUri,
           sellerFeeBasisPoints: 0,
-          creators: some([
-            {
-              address: payerUmiPublicKey,
-              verified: true, // Creator is verified when they sign the transaction
-              share: 100, // 100% of creator royalties
-            },
-          ]),
+          creators: some(createCreatorMetadata(payerUmiPublicKey)),
           collection: none(),
           uses: none(),
         }),
@@ -420,13 +408,7 @@ export async function addMetadataToExistingToken(
         decimals: some(decimals),
         tokenStandard: TokenStandard.Fungible,
         collectionDetails: none(),
-        creators: some([
-          {
-            address: payerUmiPublicKey,
-            verified: true, // Creator is verified when they sign the transaction
-            share: 100, // 100% of creator royalties
-          },
-        ]),
+        creators: some(createCreatorMetadata(payerUmiPublicKey)),
         printSupply: none(),
         isMutable: true,
         primarySaleHappened: false,
