@@ -165,7 +165,7 @@ export async function createNFT(
       name: metadata.name,
       symbol: metadata.symbol,
       uri: metadataUri,
-      sellerFeeBasisPoints: percentAmount(metadata.sellerFeeBasisPoints / 100), // Convert basis points to percentage
+      sellerFeeBasisPoints: percentAmount(metadata.sellerFeeBasisPoints / 100), // Convert basis points (0-10000) to percentage (0-100)
       decimals: some(0), // NFTs have 0 decimals
       tokenStandard: TokenStandard.NonFungible, // NFT standard (not Fungible)
       collectionDetails: none(),
