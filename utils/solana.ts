@@ -232,12 +232,7 @@ export async function createTokenWithMetadata(
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ Metadata should now be visible on Solscan.io');
-    if (revokeMintAuthority) {
-      console.log('✅ Mint authority revoked - token supply is now fixed');
-    }
-    if (revokeFreezeAuthority) {
-      console.log('✅ Freeze authority revoked - token accounts cannot be frozen');
-    }
+    console.log('✅ Mint and freeze authorities are managed by Metaplex for metadata integrity');
     console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
@@ -677,7 +672,7 @@ export async function createNFT(
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ NFT should now be visible on Solscan.io and Solana Explorer');
-    console.log('✅ Mint authority revoked - supply is fixed at 1');
+    console.log('✅ Mint authority managed by Metaplex - supply is fixed at 1');
     console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
