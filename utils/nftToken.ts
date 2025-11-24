@@ -137,7 +137,8 @@ export async function createNFT(
     );
 
     // Step 6: Create Metaplex metadata using UMI
-    // This step is done AFTER minting to avoid authority conflicts
+    // This step is done AFTER minting to avoid authority conflicts.
+    // Metaplex will manage the mint authority to ensure NFT supply stays at 1.
     const umi = createUmi(connection.rpcEndpoint);
     
     // Convert the mint keypair to UMI format
@@ -184,19 +185,10 @@ export async function createNFT(
       transaction.add(web3Ix);
     }
 
-    // Step 7: Revoke mint authority to ensure supply stays at 1
-    // This must be done AFTER metadata creation to ensure metadata program
-    // has the correct authority references
-    transaction.add(
-      createSetAuthorityInstruction(
-        mintPublicKey,
-        payer,
-        AuthorityType.MintTokens,
-        null,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-    );
+    // Note: Metaplex Token Metadata program automatically manages mint authority
+    // when creating NFT metadata. The mint authority is transferred to the metadata
+    // program, ensuring the supply stays at 1 for NFTs. No additional SetAuthority
+    // instruction is needed.
 
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
@@ -229,7 +221,7 @@ export async function createNFT(
     console.log('✅ On-chain metadata created via Metaplex Token Metadata Program');
     console.log('✅ Metadata URI:', metadataUri);
     console.log('✅ NFT should now be visible on Solscan.io and Solana Explorer');
-    console.log('✅ Mint authority revoked - supply is fixed at 1');
+    console.log('✅ Mint authority managed by Metaplex - supply is fixed at 1');
     console.log('Transaction signature:', signature);
 
     return mintPublicKey.toString();
