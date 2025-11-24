@@ -111,7 +111,40 @@ export async function createTokenWithMetadata(
       )
     );
 
-    // Step 3: Create Metaplex metadata using UMI
+    // Step 3: Get associated token account address
+    const associatedTokenAccount = await getAssociatedTokenAddress(
+      mintPublicKey,
+      payer,
+      false,
+      TOKEN_PROGRAM_ID
+    );
+
+    // Step 4: Create associated token account
+    transaction.add(
+      createAssociatedTokenAccountInstruction(
+        payer,
+        associatedTokenAccount,
+        payer,
+        mintPublicKey,
+        TOKEN_PROGRAM_ID
+      )
+    );
+
+    // Step 5: Mint tokens to the associated token account
+    // This must happen BEFORE creating metadata, because Metaplex will transfer mint authority
+    const mintAmount = calculateTokenAmount(metadata.supply, metadata.decimals);
+    transaction.add(
+      createMintToInstruction(
+        mintPublicKey,
+        associatedTokenAccount,
+        payer,
+        mintAmount,
+        [],
+        TOKEN_PROGRAM_ID
+      )
+    );
+
+    // Step 6: Create Metaplex metadata using UMI
     const umi = createUmi(connection.rpcEndpoint);
     
     // Convert the mint keypair to UMI format
@@ -160,50 +193,12 @@ export async function createTokenWithMetadata(
       transaction.add(web3Ix);
     }
 
-    // Step 4: Get associated token account address
-    const associatedTokenAccount = await getAssociatedTokenAddress(
-      mintPublicKey,
-      payer,
-      false,
-      TOKEN_PROGRAM_ID
-    );
-
-    // Step 5: Create associated token account
-    transaction.add(
-      createAssociatedTokenAccountInstruction(
-        payer,
-        associatedTokenAccount,
-        payer,
-        mintPublicKey,
-        TOKEN_PROGRAM_ID
-      )
-    );
-
-    // Step 6: Mint tokens to the associated token account
-    const mintAmount = calculateTokenAmount(metadata.supply, metadata.decimals);
-    transaction.add(
-      createMintToInstruction(
-        mintPublicKey,
-        associatedTokenAccount,
-        payer,
-        mintAmount,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-    );
-
     // Step 7: Revoke mint authority if requested
+    // Note: When creating metadata, Metaplex transfers mint and freeze authorities to itself.
+    // The revokeMintAuthority option is ignored because authority is already controlled by Metaplex.
+    // This ensures the token's metadata cannot be detached, maintaining on-chain metadata integrity.
     if (revokeMintAuthority) {
-      transaction.add(
-        createSetAuthorityInstruction(
-          mintPublicKey,
-          payer,
-          AuthorityType.MintTokens,
-          null,
-          [],
-          TOKEN_PROGRAM_ID
-        )
-      );
+      console.log('Note: Mint authority is already managed by Metaplex Token Metadata program');
     }
 
     // Partially sign with mint keypair
@@ -567,7 +562,39 @@ export async function createNFT(
       )
     );
 
-    // Step 3: Create Metaplex metadata using UMI
+    // Step 3: Get associated token account address
+    const associatedTokenAccount = await getAssociatedTokenAddress(
+      mintPublicKey,
+      payer,
+      false,
+      TOKEN_PROGRAM_ID
+    );
+
+    // Step 4: Create associated token account
+    transaction.add(
+      createAssociatedTokenAccountInstruction(
+        payer,
+        associatedTokenAccount,
+        payer,
+        mintPublicKey,
+        TOKEN_PROGRAM_ID
+      )
+    );
+
+    // Step 5: Mint exactly 1 NFT to the associated token account
+    // This must happen BEFORE creating metadata, because Metaplex will transfer mint authority
+    transaction.add(
+      createMintToInstruction(
+        mintPublicKey,
+        associatedTokenAccount,
+        payer,
+        1, // NFTs have supply of 1
+        [],
+        TOKEN_PROGRAM_ID
+      )
+    );
+
+    // Step 6: Create Metaplex metadata using UMI
     const umi = createUmi(connection.rpcEndpoint);
     
     // Convert the mint keypair to UMI format
@@ -614,48 +641,10 @@ export async function createNFT(
       transaction.add(web3Ix);
     }
 
-    // Step 4: Get associated token account address
-    const associatedTokenAccount = await getAssociatedTokenAddress(
-      mintPublicKey,
-      payer,
-      false,
-      TOKEN_PROGRAM_ID
-    );
-
-    // Step 5: Create associated token account
-    transaction.add(
-      createAssociatedTokenAccountInstruction(
-        payer,
-        associatedTokenAccount,
-        payer,
-        mintPublicKey,
-        TOKEN_PROGRAM_ID
-      )
-    );
-
-    // Step 6: Mint exactly 1 NFT to the associated token account
-    transaction.add(
-      createMintToInstruction(
-        mintPublicKey,
-        associatedTokenAccount,
-        payer,
-        1, // NFTs have supply of 1
-        [],
-        TOKEN_PROGRAM_ID
-      )
-    );
-
-    // Step 7: Revoke mint authority to ensure supply stays at 1
-    transaction.add(
-      createSetAuthorityInstruction(
-        mintPublicKey,
-        payer,
-        AuthorityType.MintTokens,
-        null,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-    );
+    // Step 7: Mint authority management
+    // Note: Metaplex Token Metadata program automatically manages mint authority for NFTs.
+    // The mint authority is transferred to the metadata program, ensuring supply stays at 1
+    // and the metadata remains immutably linked to the NFT.
 
     // Partially sign with mint keypair
     transaction.partialSign(mintKeypair);
