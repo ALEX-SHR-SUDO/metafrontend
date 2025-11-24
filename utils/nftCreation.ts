@@ -11,6 +11,8 @@ export interface NFTFormData {
   externalUrl: string;
   sellerFeeBasisPoints: number;
   attributes: Array<{ trait_type: string; value: string }>;
+  animationUrl?: string;
+  category?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ export function formDataToNFTMetadata(
   formData: NFTFormData,
   imageUri: string
 ): NFTMetadata {
-  return {
+  const metadata: NFTMetadata = {
     name: formData.name,
     symbol: formData.symbol,
     description: formData.description,
@@ -37,6 +39,57 @@ export function formDataToNFTMetadata(
     sellerFeeBasisPoints: formData.sellerFeeBasisPoints,
     attributes: formData.attributes,
   };
+
+  // Add optional fields
+  if (formData.animationUrl) {
+    metadata.animationUrl = formData.animationUrl;
+  }
+
+  // Build properties object if we have category or image files
+  const properties: NFTMetadata['properties'] = {};
+  let hasProperties = false;
+
+  if (formData.category) {
+    properties.category = formData.category;
+    hasProperties = true;
+  }
+
+  // Add image file to properties.files array
+  if (imageUri) {
+    properties.files = [
+      {
+        uri: imageUri,
+        type: imageUri.toLowerCase().endsWith('.png') ? 'image/png' : 
+              imageUri.toLowerCase().endsWith('.jpg') || imageUri.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' :
+              imageUri.toLowerCase().endsWith('.gif') ? 'image/gif' :
+              imageUri.toLowerCase().endsWith('.svg') ? 'image/svg+xml' :
+              'image/png', // default to png
+      },
+    ];
+    hasProperties = true;
+  }
+
+  // Add animation URL to files if present
+  if (formData.animationUrl) {
+    if (!properties.files) {
+      properties.files = [];
+    }
+    properties.files.push({
+      uri: formData.animationUrl,
+      type: formData.animationUrl.toLowerCase().endsWith('.mp4') ? 'video/mp4' :
+            formData.animationUrl.toLowerCase().endsWith('.webm') ? 'video/webm' :
+            formData.animationUrl.toLowerCase().endsWith('.mp3') ? 'audio/mp3' :
+            formData.animationUrl.toLowerCase().endsWith('.wav') ? 'audio/wav' :
+            formData.animationUrl.toLowerCase().endsWith('.glb') ? 'model/gltf-binary' :
+            'video/mp4', // default to mp4
+    });
+  }
+
+  if (hasProperties) {
+    metadata.properties = properties;
+  }
+
+  return metadata;
 }
 
 /**
@@ -64,6 +117,54 @@ export function createNFTMetadata(
 
   if (formData.attributes.length > 0) {
     metadata.attributes = formData.attributes;
+  }
+
+  if (formData.animationUrl) {
+    metadata.animation_url = formData.animationUrl;
+  }
+
+  // Build properties object
+  const properties: Record<string, any> = {};
+  let hasProperties = false;
+
+  if (formData.category) {
+    properties.category = formData.category;
+    hasProperties = true;
+  }
+
+  // Add files array with image and animation
+  const files: Array<{ uri: string; type: string }> = [];
+  
+  if (imageUri) {
+    files.push({
+      uri: imageUri,
+      type: imageUri.toLowerCase().endsWith('.png') ? 'image/png' : 
+            imageUri.toLowerCase().endsWith('.jpg') || imageUri.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' :
+            imageUri.toLowerCase().endsWith('.gif') ? 'image/gif' :
+            imageUri.toLowerCase().endsWith('.svg') ? 'image/svg+xml' :
+            'image/png',
+    });
+  }
+
+  if (formData.animationUrl) {
+    files.push({
+      uri: formData.animationUrl,
+      type: formData.animationUrl.toLowerCase().endsWith('.mp4') ? 'video/mp4' :
+            formData.animationUrl.toLowerCase().endsWith('.webm') ? 'video/webm' :
+            formData.animationUrl.toLowerCase().endsWith('.mp3') ? 'audio/mp3' :
+            formData.animationUrl.toLowerCase().endsWith('.wav') ? 'audio/wav' :
+            formData.animationUrl.toLowerCase().endsWith('.glb') ? 'model/gltf-binary' :
+            'video/mp4',
+    });
+  }
+
+  if (files.length > 0) {
+    properties.files = files;
+    hasProperties = true;
+  }
+
+  if (hasProperties) {
+    metadata.properties = properties;
   }
 
   return metadata;

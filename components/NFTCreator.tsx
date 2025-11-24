@@ -27,6 +27,8 @@ export default function NFTCreator() {
     externalUrl: '',
     sellerFeeBasisPoints: 500,
     attributes: [],
+    animationUrl: '',
+    category: '',
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -37,7 +39,7 @@ export default function NFTCreator() {
   const [error, setError] = useState('');
   const [currentAttribute, setCurrentAttribute] = useState({ trait_type: '', value: '' });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -124,6 +126,8 @@ export default function NFTCreator() {
         externalUrl: '',
         sellerFeeBasisPoints: 500,
         attributes: [],
+        animationUrl: '',
+        category: '',
       });
       setImageFile(null);
       setImagePreview('');
@@ -259,6 +263,45 @@ export default function NFTCreator() {
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="https://example.com"
                 />
+              </div>
+
+              {/* Animation URL */}
+              <div>
+                <label htmlFor="animationUrl" className="block text-sm font-medium text-white mb-2">
+                  Animation URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  id="animationUrl"
+                  name="animationUrl"
+                  value={formData.animationUrl}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="https://example.com/video.mp4 or animation.mp3"
+                />
+                <p className="text-xs text-gray-400 mt-1">URL to a video, audio, or 3D model file (mp4, webm, mp3, glb, etc.)</p>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-white mb-2">
+                  Category (Optional)
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                  <option value="audio">Audio</option>
+                  <option value="vr">VR</option>
+                  <option value="html">HTML</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">Categorize your NFT for better discoverability</p>
               </div>
 
               {/* Seller Fee */}

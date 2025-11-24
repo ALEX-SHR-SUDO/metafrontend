@@ -44,6 +44,12 @@ export interface NFTMetadata {
   externalUrl?: string;
   sellerFeeBasisPoints: number;
   attributes?: Array<{ trait_type: string; value: string }>;
+  animationUrl?: string;
+  properties?: {
+    files?: Array<{ uri: string; type: string }>;
+    category?: string;
+    creators?: Array<{ address: string; share: number }>;
+  };
 }
 
 /**
