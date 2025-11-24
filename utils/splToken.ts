@@ -167,6 +167,7 @@ export async function createTokenWithMetadata(
     });
 
     // Build the createV1 instruction for metadata
+    // Set the wallet as the creator with 100% share and verified status
     const createMetadataIx = createV1(umi, {
       mint: mintUmiSigner,
       authority: payerUmiSigner,  // Set the mint authority
@@ -179,7 +180,13 @@ export async function createTokenWithMetadata(
       decimals: some(metadata.decimals),
       tokenStandard: TokenStandard.Fungible,
       collectionDetails: none(),
-      creators: none(),
+      creators: some([
+        {
+          address: payerUmiPublicKey,
+          verified: true, // Creator is verified when they sign the transaction
+          share: 100, // 100% of creator royalties
+        },
+      ]),
       printSupply: none(),
       isMutable: true,
       primarySaleHappened: false,
@@ -382,7 +389,13 @@ export async function addMetadataToExistingToken(
           symbol: metadata.symbol,
           uri: metadataUri,
           sellerFeeBasisPoints: 0,
-          creators: none(),
+          creators: some([
+            {
+              address: payerUmiPublicKey,
+              verified: true, // Creator is verified when they sign the transaction
+              share: 100, // 100% of creator royalties
+            },
+          ]),
           collection: none(),
           uses: none(),
         }),
@@ -407,7 +420,13 @@ export async function addMetadataToExistingToken(
         decimals: some(decimals),
         tokenStandard: TokenStandard.Fungible,
         collectionDetails: none(),
-        creators: none(),
+        creators: some([
+          {
+            address: payerUmiPublicKey,
+            verified: true, // Creator is verified when they sign the transaction
+            share: 100, // 100% of creator royalties
+          },
+        ]),
         printSupply: none(),
         isMutable: true,
         primarySaleHappened: false,

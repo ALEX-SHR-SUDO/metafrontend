@@ -162,6 +162,7 @@ export async function createNFT(
     });
 
     // Build the createV1 instruction for NFT metadata
+    // Set the wallet as the creator with 100% share and verified status
     const createMetadataIx = createV1(umi, {
       mint: mintUmiSigner,
       authority: payerUmiSigner,
@@ -174,7 +175,13 @@ export async function createNFT(
       decimals: some(0), // NFTs have 0 decimals
       tokenStandard: TokenStandard.NonFungible, // NFT standard (not Fungible)
       collectionDetails: none(),
-      creators: none(),
+      creators: some([
+        {
+          address: payerUmiPublicKey,
+          verified: true, // Creator is verified when they sign the transaction
+          share: 100, // 100% of creator royalties
+        },
+      ]),
       printSupply: some(printSupply('Zero')), // NFTs require explicit print supply
       isMutable: true,
       primarySaleHappened: false,
